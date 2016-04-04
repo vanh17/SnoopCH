@@ -1,0 +1,11 @@
+*.cmi
+*.cmo
+lexer.ml
+parser.ml
+parser.mli
+lang
+<<<<<<< HEAD
+*.exe
+=======
+compiled
+*.rkt~
