@@ -2,7 +2,8 @@ exception Desugar of string      (* Use for desugarer errors *)
 exception Interp of string       (* Use for interpreter errors *)
 
 (* You will need to add more cases here. *)
-type exprS = NumS of float
+type exprS = IntS of int
+             | NumS of float
              | PinfS of float
              | NinfS of float
              | NanS of string 
@@ -17,7 +18,8 @@ type exprS = NumS of float
              | NeqS of exprS * exprS
 
 (* You will need to add more cases here. *)
-type exprC = NumC of float
+type exprC = IntC of int
+             | NumC of float
              | PinfC of float
              | NinfC of float
              | NanC of string
@@ -29,7 +31,8 @@ type exprC = NumC of float
 
 
 (* You will need to add more cases here. *)
-type value = Num of float
+type value = Int of int
+             | Num of float
              | Pinf of float
              | Ninf of float
              | Nan of string
@@ -51,12 +54,25 @@ let bind str v env = (str, v) :: env
    You may be asked to add methods here. You may also choose to add your own
    helper methods here.
 *)
-let arithEval op v1 v2 = match (op, v1, v2) with
+let rec arithEval op v1 v2 = match (op, v1, v2) with
+                         | (_, Num x, Int y) -> arithEval op v1 (Num (float_of_int y))
+                         | (_, Int x, Num y) -> arithEval op (Num (float_of_int x)) v2
+                         | ("/", Num x, Num 0.0) -> if (x = 0.0) then (Nan "+nan.0") 
+                                                    else if (x > 0.0) then (Pinf max_float) 
+                                                         else (Ninf (-. max_float))
                          | ("+", Num x, Num y) -> Num (x +. y) 
                          | ("-", Num x, Num y) -> Num (x -. y)
                          | ("*", Num x, Num y) -> Num (x *. y)
                          | ("/", Num x, Num y) -> Num (x /. y)
                          | (_, Num x, Num y) -> raise (Interp "interpErr: only +, -, *")
+                         | ("/", Int x, Int 0) -> if (x = 0) then (Nan "+nan.0") 
+                                                  else if (x > 0) then (Pinf max_float) 
+                                                       else Ninf (-. max_float)
+                         | ("+", Int x, Int y) -> Int (x + y) 
+                         | ("-", Int x, Int y) -> Int (x - y)
+                         | ("*", Int x, Int y) -> Int (x * y)
+                         | ("/", Int x, Int y) -> Int (x / y)
+                         | (_, Int x, Int y) -> raise (Interp "interpErr: only +, -, *")
                          | _ -> raise (Interp "interpErr: not a num")
 
 
@@ -78,6 +94,7 @@ let eqEval v1 v2 = match (v1, v2) with
 (* You will need to add cases here. *)
 (* desugar : exprS -> exprC *)
 let rec desugar exprS = match exprS with
+  | IntS i        -> IntC i
   | NumS i        -> NumC i
   | PinfS i       -> PinfC i
   | NinfS i       -> NinfC i
@@ -96,6 +113,7 @@ let rec desugar exprS = match exprS with
 (* You will need to add cases here. *)
 (* interp : Value env -> exprC -> value *)
 let rec interp env r = match r with
+  | IntC i        -> Int i
   | NumC i        -> Num i
   | PinfC i       -> Pinf i
   | NinfC i       -> Ninf i
@@ -105,11 +123,7 @@ let rec interp env r = match r with
                           | Bool i1' -> if (i1') then interp env i2 
                                                  else interp env i3
                           | _ -> raise (Interp "interpErr: only boolean") )
-  | ArithC (op, v1, v2) -> ( match (op, v1, v2) with
-                             | ("/", NumC x, NumC 0.0) -> if (x = 0.0) then (Nan "+nan.0") 
-                                                          else if (x > 0.0) then (Pinf max_float) 
-                                                               else Ninf (-. max_float)
-                             | _        -> arithEval op (interp env v1) (interp env v2))
+  | ArithC (op, v1, v2) -> arithEval op (interp env v1) (interp env v2)
   | CompC (op, v1, v2) -> compEval op (interp env v1) (interp env v2)
   | EqC (v1, v2) -> eqEval (interp env v1) (interp env v2)
 
@@ -121,6 +135,7 @@ let evaluate exprC = exprC |> interp []
 
 (* You will need to add cases to this function as you add new value types. *)
 let rec valToString r = match r with
+  | Int i           -> string_of_int i
   | Num i           -> string_of_float i
   | Pinf i          -> "+inf.0"
   | Ninf i          -> "-inf.0"

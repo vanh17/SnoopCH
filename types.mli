@@ -1,7 +1,8 @@
 exception Desugar of string      (* Use for desugarer errors *)
 exception Interp of string       (* Use for interpreter errors *)
 
-type exprS = NumS of float
+type exprS = IntS of int
+             | NumS of float
              | PinfS of float
              | NinfS of float
              | NanS of string
@@ -14,7 +15,8 @@ type exprS = NumS of float
              | CompS of string * exprS * exprS
              | EqS of exprS * exprS
              | NeqS of exprS * exprS
-type exprC = NumC of float
+type exprC = IntC of int
+             | NumC of float
              | PinfC of float
              | NinfC of float
              | NanC of string 
@@ -23,7 +25,8 @@ type exprC = NumC of float
              | ArithC of string * exprC * exprC
              | CompC of string * exprC * exprC
              | EqC of exprC * exprC
-type value = Num of float
+type value = Int of int
+             | Num of float
              | Pinf of float
              | Ninf of float
              | Nan of string

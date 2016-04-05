@@ -2,6 +2,7 @@
   open Types
 %}
 %token <float> FLOAT
+%token <int> INT
 %token <string> COMPOP
 %token PINF
 %token NINF
@@ -35,6 +36,7 @@ headEx:
 
 expr:
   | FLOAT                        { NumS $1 }
+  | INT                          { IntS $1 }
   | PINF                         { PinfS max_float }
   | NINF                         { NinfS (-. max_float) }
   | NAN                          { NanS "+nan.0" }
