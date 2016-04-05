@@ -3,6 +3,9 @@ exception Interp of string       (* Use for interpreter errors *)
 
 (* You will need to add more cases here. *)
 type exprS = NumS of float
+             | PinfS of float
+             | NinfS of float
+             | NanS of string 
              | BoolS of bool
              | IfS of exprS * exprS * exprS
              | OrS of exprS * exprS
@@ -15,6 +18,9 @@ type exprS = NumS of float
 
 (* You will need to add more cases here. *)
 type exprC = NumC of float
+             | PinfC of float
+             | NinfC of float
+             | NanC of string
              | BoolC of bool
              | IfC of exprC * exprC * exprC
              | ArithC of string * exprC * exprC
@@ -24,6 +30,9 @@ type exprC = NumC of float
 
 (* You will need to add more cases here. *)
 type value = Num of float
+             | Pinf of float
+             | Ninf of float
+             | Nan of string
              | Bool of bool
 
 type 'a env = (string * 'a) list
@@ -71,6 +80,9 @@ let eqEval v1 v2 = match (v1, v2) with
 (* desugar : exprS -> exprC *)
 let rec desugar exprS = match exprS with
   | NumS i        -> NumC i
+  | PinfS i       -> PinfC i
+  | NinfS i       -> NinfC i
+  | NanS i        -> NanC i
   | BoolS i       -> BoolC i
   | IfS (cond, th, els) -> IfC (desugar cond, desugar th, desugar els)
   | NotS e -> desugar (IfS (e, BoolS false, BoolS true))
@@ -86,6 +98,9 @@ let rec desugar exprS = match exprS with
 (* interp : Value env -> exprC -> value *)
 let rec interp env r = match r with
   | NumC i        -> Num i
+  | PinfC i       -> Pinf i
+  | NinfC i       -> Ninf i
+  | NanC i        -> Nan i
   | BoolC i       -> Bool i
   | IfC (i1, i2, i3) -> ( match (interp env i1) with
                           | Bool i1' -> if (i1') then interp env i2 
@@ -104,4 +119,7 @@ let evaluate exprC = exprC |> interp []
 (* You will need to add cases to this function as you add new value types. *)
 let rec valToString r = match r with
   | Num i           -> string_of_float i
+  | Pinf i          -> "+inf.0"
+  | Ninf i          -> "-inf.0"
+  | Nan i           -> "+nan.0"
   | Bool i          -> string_of_bool i

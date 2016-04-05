@@ -3,6 +3,9 @@
 %}
 %token <float> FLOAT
 %token <string> COMPOP
+%token PINF
+%token NINF
+%token NAN
 %token TRUE FALSE
 %token IF THEN ELSE
 %token OR AND NOT
@@ -32,6 +35,9 @@ headEx:
 
 expr:
   | FLOAT                        { NumS $1 }
+  | PINF                         { PinfS max_float }
+  | NINF                         { NinfS (-. max_float) }
+  | NAN                          { NanS "+nan.0" }
   | TRUE                         { BoolS true }
   | FALSE                        { BoolS false }
   | IF expr THEN expr ELSE expr  { IfS ($2, $4, $6) }

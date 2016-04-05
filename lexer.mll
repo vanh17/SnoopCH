@@ -13,6 +13,9 @@ let white = [' ' '\t' '\n' '\r']+ | "//" ([^ '\n' '\r'])*
 let newline = '\n' | '\r' | "\r\n"
 let dblsemi = ";;"
 let float = (digit+ '.'? | digit* frac) exp?
+let pinf = "+inf.0"
+let ninf = "-inf.0"
+let nan = "+nan.0"
 let true = "true" | "#t"
 let false = "false" | "#f"
 let comp = ">" | ">=" | "<" | "<="
@@ -24,6 +27,9 @@ rule token = parse
   | false       { FALSE }
   | dblsemi     { DBLSEMI }
   | float as x  { FLOAT (float_of_string x) }
+  | "+inf.0"    { PINF }
+  | "-inf.0"    { NINF }
+  | "+nan.0"    { NAN }
   | "if"        { IF }
   | "then"      { THEN }
   | "else"      { ELSE }
