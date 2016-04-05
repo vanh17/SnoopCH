@@ -2,6 +2,7 @@ exception Desugar of string      (* Use for desugarer errors *)
 exception Interp of string       (* Use for interpreter errors *)
 
 type exprS = IntS of int
+             | FracS of exprS * exprS
              | NumS of float
              | PinfS of float
              | NinfS of float
@@ -16,6 +17,7 @@ type exprS = IntS of int
              | EqS of exprS * exprS
              | NeqS of exprS * exprS
 type exprC = IntC of int
+             | FracC of exprC * exprC
              | NumC of float
              | PinfC of float
              | NinfC of float
@@ -26,6 +28,7 @@ type exprC = IntC of int
              | CompC of string * exprC * exprC
              | EqC of exprC * exprC
 type value = Int of int
+             | Frac of value * value
              | Num of float
              | Pinf of float
              | Ninf of float

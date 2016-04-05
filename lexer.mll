@@ -14,6 +14,7 @@ let newline = '\n' | '\r' | "\r\n"
 let dblsemi = ";;"
 let float = sign? (digit+ '.' | digit* frac) exp?
 let int = sign? (digit+)
+let fract = '/'
 let pinf = "+inf.0"
 let ninf = "-inf.0"
 let nan = "+nan.0"
@@ -29,6 +30,7 @@ rule token = parse
   | dblsemi     { DBLSEMI }
   | float as x  { FLOAT (float_of_string x) }
   | int as x    { INT (int_of_string x) }
+  | fract as s  { FRAC s }
   | "+inf.0"    { PINF }
   | "-inf.0"    { NINF }
   | "+nan.0"    { NAN }

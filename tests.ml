@@ -188,7 +188,8 @@ let t65i = evaluate (desugar (ArithS ("/", NumS 1.0, IntS 1))) = Num 1.0
 
 let t66i = evaluate (desugar (ArithS ("/", IntS 1, NumS 2.00))) = Num 0.5
 
-let t67i = evaluate (desugar (ArithS ("/", IntS 2, IntS 1))) = Int 2                                                                           
+let t67i = evaluate (desugar (ArithS ("/", IntS 2, IntS 1))) = Int 2 
+
 
 let t6g = desugar (ArithS ("/.", NumS 0.0, ArithS ("+", NumS 0.00, BoolS true))) = ArithC ("/.", NumC 0.0, ArithC ("+", NumC 0.00, BoolC true))
 
@@ -292,3 +293,19 @@ let t12g = evaluate (desugar (ArithS ("/", NumS 4.5, NumS 0.0))) = Pinf max_floa
 let t12h = evaluate (desugar (ArithS ("/", NumS (-. 8.5), NumS 0.0))) = Ninf (-. max_float)                                                                        
 
 let t12i = evaluate (desugar (ArithS ("/", NumS 0.0, NumS 0.0))) = Nan "+nan.0"
+
+let t13a = evaluate (desugar (FracS (IntS 4, IntS 1))) = Frac (Int 4, Int 1)
+
+let t13b = try (evaluate (desugar (FracS (NumS (-. 8.5), IntS 0))); false) 
+           with Interp "interpErr: not an int" -> true
+           | _ -> false                                                                       
+
+let t13c = try (evaluate (desugar (FracS (ArithS ("+", IntS 1, NumS 3.5), ArithS ("-", IntS 1, IntS 1)))); false)
+           with Interp "interpErr: not an int" -> true
+           | _ -> false
+
+let t13d = try (evaluate (desugar (FracS (ArithS ("+", IntS 1, IntS 3), ArithS ("-", IntS 1, IntS 1)))); false)
+           with Interp "interpErr: zero denumerator" -> true
+           | _ -> false
+let t13e = evaluate (desugar (FracS (IntS 0, IntS 2))) = Int 0
+

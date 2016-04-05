@@ -3,6 +3,7 @@ exception Interp of string       (* Use for interpreter errors *)
 
 (* You will need to add more cases here. *)
 type exprS = IntS of int
+             | FracS of exprS * exprS
              | NumS of float
              | PinfS of float
              | NinfS of float
@@ -19,6 +20,7 @@ type exprS = IntS of int
 
 (* You will need to add more cases here. *)
 type exprC = IntC of int
+             | FracC of exprC * exprC
              | NumC of float
              | PinfC of float
              | NinfC of float
@@ -32,6 +34,7 @@ type exprC = IntC of int
 
 (* You will need to add more cases here. *)
 type value = Int of int
+             | Frac of value * value
              | Num of float
              | Pinf of float
              | Ninf of float
@@ -100,6 +103,7 @@ let rec desugar exprS = match exprS with
   | NinfS i       -> NinfC i
   | NanS i        -> NanC i
   | BoolS i       -> BoolC i
+  | FracS (v1, v2)      -> FracC (desugar v1, desugar v2)
   | IfS (cond, th, els) -> IfC (desugar cond, desugar th, desugar els)
   | NotS e -> desugar (IfS (e, BoolS false, BoolS true))
   | OrS (e1, e2) -> desugar (IfS (e1, BoolS true, IfS (e2, BoolS true, BoolS false)))
@@ -119,6 +123,11 @@ let rec interp env r = match r with
   | NinfC i       -> Ninf i
   | NanC i        -> Nan i
   | BoolC i       -> Bool i
+  | FracC (v1, v2)   -> ( match (interp env v1, interp env v2) with
+                          | (Int i1, Int i2) -> if (i2 = 0) then raise (Interp "interpErr: zero denumerator")
+                                                else if (i1 = 0) then Int 0
+                                                     else Frac (Int i1, Int i2)
+                          | _ -> raise (Interp "interpErr: not an int"))
   | IfC (i1, i2, i3) -> ( match (interp env i1) with
                           | Bool i1' -> if (i1') then interp env i2 
                                                  else interp env i3
@@ -135,9 +144,10 @@ let evaluate exprC = exprC |> interp []
 
 (* You will need to add cases to this function as you add new value types. *)
 let rec valToString r = match r with
-  | Int i           -> string_of_int i
-  | Num i           -> string_of_float i
-  | Pinf i          -> "+inf.0"
-  | Ninf i          -> "-inf.0"
-  | Nan i           -> "+nan.0"
-  | Bool i          -> string_of_bool i
+  | Int i                   -> string_of_int i
+  | Frac (Int i1, Int i2)   -> (string_of_int i1) ^ "/" ^ (string_of_int i2)
+  | Num i                   -> string_of_float i
+  | Pinf i                  -> "+inf.0"
+  | Ninf i                  -> "-inf.0"
+  | Nan i                   -> "+nan.0"
+  | Bool i                  -> string_of_bool i
