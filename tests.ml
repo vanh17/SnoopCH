@@ -269,4 +269,8 @@ let t11h = evaluate (desugar (NeqS (NeqS (NumS 2.5, NumS 4.5), NeqS (NumS 2.5, N
 
 let t11i = evaluate (desugar (NeqS (ArithS ("*", NumS 5.0, NumS 10.0), ArithS ("-", NumS 50.0, NumS 0.0)))) = Bool false                                                                            
 
+let t12g = evaluate (desugar (ArithS ("/", NumS 4.5, NumS 0.0))) = Pinf max_float
 
+let t12h = evaluate (desugar (ArithS ("/", NumS (-. 8.5), NumS 0.0))) = Ninf (-. max_float)                                                                        
+
+let t12i = evaluate (desugar (ArithS ("/", NumS 0.0, NumS 0.0))) = Nan "+nan.0"
