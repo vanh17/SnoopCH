@@ -127,9 +127,6 @@ let t5f = try (evaluate (ArithC ("-", NumC 2.5, BoolC true)); false) with Interp
 
 let t5g = evaluate (ArithC ("/", NumC 2.5, NumC 1.0)) = Num 2.5
 
-let t5h = try (evaluate (ArithC ("/", NumC 0.0, NumC 0.00)); false) with Interp "interpErr: can't divide 0.0" -> true
-                                                                             | _ -> false
-
 let t5i = try (evaluate (ArithC ("/.", NumC 0.0, NumC 0.00)); false) with Interp "interpErr: only +, -, *" -> true
                                                                              | _ -> false
 
@@ -171,6 +168,27 @@ let t6j = try (evaluate (desugar (ArithS ("+ ", NumS 0.0, NumS 0.00))); false) w
 
 let t6i = try (evaluate (desugar (ArithS ("/.", NumS 0.0, ArithS ("+", NumS 0.00, BoolS true)))); false) with Interp "interpErr: not a num" -> true
                                                                              | _ -> false
+
+let t61j = evaluate (desugar (ArithS ("/", NumS 0.0, NumS 0.00))) = Nan "+nan.0"
+
+let t62j = evaluate (desugar (ArithS ("/", IntS 0, NumS 0.00))) = Nan "+nan.0"
+
+let t62j = evaluate (desugar (ArithS ("/", NumS 0.0, IntS 0))) = Nan "+nan.0"
+
+let t61i = try (evaluate (desugar (ArithS ("/.", NumS 0.0, ArithS ("+", NumS 0.00, BoolS true)))); false) with Interp "interpErr: not a num" -> true
+                                                                             | _ -> false 
+
+let t62i = evaluate (desugar (ArithS ("/", NumS 1.0, NumS 0.00))) = Pinf max_float
+
+let t63i = evaluate (desugar (ArithS ("/", IntS 1, NumS 0.00))) = Pinf max_float
+
+let t64i = evaluate (desugar (ArithS ("/", NumS (-. 3.0), IntS 0))) = Ninf (-. max_float)
+
+let t65i = evaluate (desugar (ArithS ("/", NumS 1.0, IntS 1))) = Num 1.0
+
+let t66i = evaluate (desugar (ArithS ("/", IntS 1, NumS 2.00))) = Num 0.5
+
+let t67i = evaluate (desugar (ArithS ("/", IntS 2, IntS 1))) = Int 2                                                                           
 
 let t6g = desugar (ArithS ("/.", NumS 0.0, ArithS ("+", NumS 0.00, BoolS true))) = ArithC ("/.", NumC 0.0, ArithC ("+", NumC 0.00, BoolC true))
 
