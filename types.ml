@@ -55,8 +55,7 @@ let arithEval op v1 v2 = match (op, v1, v2) with
                          | ("+", Num x, Num y) -> Num (x +. y) 
                          | ("-", Num x, Num y) -> Num (x -. y)
                          | ("*", Num x, Num y) -> Num (x *. y)
-                         | ("/", Num x, Num y) -> if (y == 0.0) then raise (Interp "interpErr: can't divide 0.0")
-                                                  else Num (x /. y)
+                         | ("/", Num x, Num y) -> Num (x /. y)
                          | (_, Num x, Num y) -> raise (Interp "interpErr: only +, -, *")
                          | _ -> raise (Interp "interpErr: not a num")
 
@@ -106,7 +105,11 @@ let rec interp env r = match r with
                           | Bool i1' -> if (i1') then interp env i2 
                                                  else interp env i3
                           | _ -> raise (Interp "interpErr: only boolean") )
-  | ArithC (op, v1, v2) -> arithEval op (interp env v1) (interp env v2)
+  | ArithC (op, v1, v2) -> ( match (op, v1, v2) with
+                             | ("/", NumC x, NumC 0.0) -> if (x = 0.0) then (Nan "+nan.0") 
+                                                          else if (x > 0.0) then (Pinf max_float) 
+                                                               else Ninf (-. max_float)
+                             | _        -> arithEval op (interp env v1) (interp env v2))
   | CompC (op, v1, v2) -> compEval op (interp env v1) (interp env v2)
   | EqC (v1, v2) -> eqEval (interp env v1) (interp env v2)
 
