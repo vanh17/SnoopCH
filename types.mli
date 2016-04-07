@@ -4,9 +4,9 @@ exception Interp of string       (* Use for interpreter errors *)
 type exprS = IntS of int
              | FracS of exprS * exprS
              | NumS of float
-             | PinfS of float
-             | NinfS of float
-             | NanS of string
+             | PinfS
+             | NinfS
+             | NanS
              | BoolS of bool
              | IfS of exprS * exprS * exprS
              | OrS of exprS * exprS
@@ -19,9 +19,9 @@ type exprS = IntS of int
 type exprC = IntC of int
              | FracC of exprC * exprC
              | NumC of float
-             | PinfC of float
-             | NinfC of float
-             | NanC of string 
+             | PinfC
+             | NinfC
+             | NanC 
              | BoolC of bool
              | IfC of exprC * exprC * exprC
              | ArithC of string * exprC * exprC
@@ -30,9 +30,9 @@ type exprC = IntC of int
 type value = Int of int
              | Frac of value * value
              | Num of float
-             | Pinf of float
-             | Ninf of float
-             | Nan of string
+             | Pinf
+             | Ninf
+             | Nan 
              | Bool of bool
 
 

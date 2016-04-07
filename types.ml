@@ -60,17 +60,17 @@ let bind str v env = (str, v) :: env
 let rec arithEval op v1 v2 = match (op, v1, v2) with
                          | (_, Num x, Int y) -> arithEval op v1 (Num (float_of_int y))
                          | (_, Int x, Num y) -> arithEval op (Num (float_of_int x)) v2
-                         | ("/", Num x, Num 0.0) -> if (x = 0.0) then (Nan "+nan.0") 
-                                                    else if (x > 0.0) then (Pinf max_float) 
-                                                         else (Ninf (-. max_float))
+                         | ("/", Num x, Num 0.0) -> if (x = 0.0) then Nan 
+                                                    else if (x > 0.0) then Pinf 
+                                                         else Ninf
                          | ("+", Num x, Num y) -> Num (x +. y) 
                          | ("-", Num x, Num y) -> Num (x -. y)
                          | ("*", Num x, Num y) -> Num (x *. y)
                          | ("/", Num x, Num y) -> Num (x /. y)
                          | (_, Num x, Num y) -> raise (Interp "interpErr: only +, -, *")
-                         | ("/", Int x, Int 0) -> if (x = 0) then (Nan "+nan.0") 
-                                                  else if (x > 0) then (Pinf max_float) 
-                                                       else Ninf (-. max_float)
+                         | ("/", Int x, Int 0) -> if (x = 0) then Nan 
+                                                  else if (x > 0) then Pinf 
+                                                       else Ninf
                          | ("+", Int x, Int y) -> Int (x + y) 
                          | ("-", Int x, Int y) -> Int (x - y)
                          | ("*", Int x, Int y) -> Int (x * y)
@@ -98,7 +98,7 @@ let eqEval v1 v2 = match (v1, v2) with
 (* desugar : exprS -> exprC *)
 let rec desugar exprS = match exprS with
   | IntS i        -> IntC i
-  | NumS          -> NumC i
+  | NumS i          -> NumC i
   | PinfS         -> PinfC 
   | NinfS         -> NinfC 
   | NanS          -> NanC 

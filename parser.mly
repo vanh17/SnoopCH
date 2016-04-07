@@ -39,9 +39,9 @@ expr:
   | FLOAT                        { NumS $1 }
   | INT                          { IntS $1 }
   | expr FRAC expr               { FracS ($1, $3) }
-  | PINF                         { PinfS max_float }
-  | NINF                         { NinfS (-. max_float) }
-  | NAN                          { NanS "+nan.0" }
+  | PINF                         { PinfS }
+  | NINF                         { NinfS }
+  | NAN                          { NanS }
   | TRUE                         { BoolS true }
   | FALSE                        { BoolS false }
   | IF expr THEN expr ELSE expr  { IfS ($2, $4, $6) }
