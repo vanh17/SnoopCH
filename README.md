@@ -18,6 +18,7 @@ extras:
 
 - macros?
 - garbage collection?
+- read input/ print output stream.
 
 
 To compile:
