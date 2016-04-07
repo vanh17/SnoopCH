@@ -5,9 +5,9 @@ exception Interp of string       (* Use for interpreter errors *)
 type exprS = IntS of int
              | FracS of exprS * exprS
              | NumS of float
-             | PinfS of float
-             | NinfS of float
-             | NanS of string 
+             | PinfS
+             | NinfS
+             | NanS  
              | BoolS of bool
              | IfS of exprS * exprS * exprS
              | OrS of exprS * exprS
@@ -22,9 +22,9 @@ type exprS = IntS of int
 type exprC = IntC of int
              | FracC of exprC * exprC
              | NumC of float
-             | PinfC of float
-             | NinfC of float
-             | NanC of string
+             | PinfC
+             | NinfC
+             | NanC 
              | BoolC of bool
              | IfC of exprC * exprC * exprC
              | ArithC of string * exprC * exprC
@@ -36,9 +36,9 @@ type exprC = IntC of int
 type value = Int of int
              | Frac of value * value
              | Num of float
-             | Pinf of float
-             | Ninf of float
-             | Nan of string
+             | Pinf 
+             | Ninf 
+             | Nan 
              | Bool of bool
 
 type 'a env = (string * 'a) list
@@ -98,10 +98,10 @@ let eqEval v1 v2 = match (v1, v2) with
 (* desugar : exprS -> exprC *)
 let rec desugar exprS = match exprS with
   | IntS i        -> IntC i
-  | NumS i        -> NumC i
-  | PinfS i       -> PinfC i
-  | NinfS i       -> NinfC i
-  | NanS i        -> NanC i
+  | NumS          -> NumC i
+  | PinfS         -> PinfC 
+  | NinfS         -> NinfC 
+  | NanS          -> NanC 
   | BoolS i       -> BoolC i
   | FracS (v1, v2)      -> FracC (desugar v1, desugar v2)
   | IfS (cond, th, els) -> IfC (desugar cond, desugar th, desugar els)
@@ -119,9 +119,9 @@ let rec desugar exprS = match exprS with
 let rec interp env r = match r with
   | IntC i        -> Int i
   | NumC i        -> Num i
-  | PinfC i       -> Pinf i
-  | NinfC i       -> Ninf i
-  | NanC i        -> Nan i
+  | PinfC         -> Pinf
+  | NinfC         -> Ninf 
+  | NanC          -> Nan 
   | BoolC i       -> Bool i
   | FracC (v1, v2)   -> ( match (interp env v1, interp env v2) with
                           | (Int i1, Int i2) -> if (i2 = 0) then raise (Interp "interpErr: zero denumerator")
@@ -147,7 +147,7 @@ let rec valToString r = match r with
   | Int i                   -> string_of_int i
   | Frac (Int i1, Int i2)   -> (string_of_int i1) ^ "/" ^ (string_of_int i2)
   | Num i                   -> string_of_float i
-  | Pinf i                  -> "+inf.0"
-  | Ninf i                  -> "-inf.0"
-  | Nan i                   -> "+nan.0"
+  | Pinf                    -> "+inf.0"
+  | Ninf                    -> "-inf.0"
+  | Nan                     -> "+nan.0"
   | Bool i                  -> string_of_bool i
