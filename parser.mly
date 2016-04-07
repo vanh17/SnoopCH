@@ -3,7 +3,7 @@
 %}
 %token <float> FLOAT
 %token <int> INT
-%token <char> FRAC
+%token <int * int> FRAC
 %token <string> COMPOP
 %token PINF
 %token NINF
@@ -38,7 +38,7 @@ headEx:
 expr:
   | FLOAT                        { NumS $1 }
   | INT                          { IntS $1 }
-  | expr FRAC expr               { FracS ($1, $3) }
+  | FRAC                         { FracS ((match $1 with (v1, v2) -> v1), (match $1 with (v1, v2) -> v2)) }
   | PINF                         { PinfS }
   | NINF                         { NinfS }
   | NAN                          { NanS }

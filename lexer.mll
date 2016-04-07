@@ -14,7 +14,7 @@ let newline = '\n' | '\r' | "\r\n"
 let dblsemi = ";;"
 let float = sign? (digit+ '.' | digit* frac) exp?
 let int = sign? (digit+)
-let fract = '/'
+let fract = sign? (digit+) '/' (digit+)
 let pinf = "+inf.0"
 let ninf = "-inf.0"
 let nan = "+nan.0"
@@ -30,7 +30,7 @@ rule token = parse
   | dblsemi     { DBLSEMI }
   | float as x  { FLOAT (float_of_string x) }
   | int as x    { INT (int_of_string x) }
-  | fract as s  { FRAC s }
+  | fract as x  { FRAC ((int_of_string (if ((String.sub x 0 1) = "+") then String.sub x 1 ((String.index x '/') - 1) else String.sub x 0 (String.index x '/')), int_of_string (String.sub x ((String.index x '/') + 1) ((String.length x) - (String.index x '/') - 1)))) }
   | "+inf.0"    { PINF }
   | "-inf.0"    { NINF }
   | "+nan.0"    { NAN }
