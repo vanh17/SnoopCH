@@ -38,7 +38,7 @@ headEx:
 expr:
   | FLOAT                        { NumS $1 }
   | INT                          { IntS $1 }
-  | FRAC                         { FracS ((match $1 with (v1, v2) -> v1), (match $1 with (v1, v2) -> v2)) }
+  | FRAC                         { FracS $1 }
   | PINF                         { PinfS }
   | NINF                         { NinfS }
   | NAN                          { NanS }

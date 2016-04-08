@@ -3,8 +3,9 @@ exception Interp of string       (* Use for interpreter errors *)
 
 (* You will need to add more cases here. *)
 type exprS = IntS of int
-             | FracS of int * int
+             | FracS of (int * int)
              | NumS of float
+             | ComplexS of (int * int)
              | PinfS
              | NinfS
              | NanS  
@@ -20,8 +21,9 @@ type exprS = IntS of int
 
 (* You will need to add more cases here. *)
 type exprC = IntC of int
-             | FracC of int * int
+             | FracC of (int * int)
              | NumC of float
+             | ComplexC of (int * int)
              | PinfC
              | NinfC
              | NanC 
@@ -34,8 +36,9 @@ type exprC = IntC of int
 
 (* You will need to add more cases here. *)
 type value = Int of int
-             | Frac of int * int
+             | Frac of (int * int)
              | Num of float
+             | Complex of (int * int)
              | Pinf 
              | Ninf 
              | Nan 
