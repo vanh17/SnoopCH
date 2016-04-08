@@ -4,6 +4,10 @@
 %token <float> FLOAT
 %token <int> INT
 %token <int * int> FRAC
+%token <int * int * int * int> COMF
+%token <int * int * float> COMFN
+%token <float * int * int> COMNF
+%token <float * float> COMN
 %token <string> COMPOP
 %token PINF
 %token NINF
@@ -39,6 +43,10 @@ expr:
   | FLOAT                        { NumS $1 }
   | INT                          { IntS $1 }
   | FRAC                         { FracS $1 }
+  | COMF                         { ComplexFrS $1 }
+  | COMFN                        { ComplexFnS $1 }
+  | COMNF                        { ComplexNfS $1 }
+  | COMN                         { ComplexNS $1 }
   | PINF                         { PinfS }
   | NINF                         { NinfS }
   | NAN                          { NanS }

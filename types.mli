@@ -4,7 +4,10 @@ exception Interp of string       (* Use for interpreter errors *)
 type exprS = IntS of int
              | FracS of (int * int)
              | NumS of float
-             | ComplexS of (int * int)
+             | ComplexFrS of (int * int * int * int)
+             | ComplexFnS of (int * int * float)
+             | ComplexNfS of (float * int * int)
+             | ComplexNS of (float * float)
              | PinfS
              | NinfS
              | NanS
@@ -20,7 +23,10 @@ type exprS = IntS of int
 type exprC = IntC of int
              | FracC of (int * int)
              | NumC of float
-             | ComplexC of (int * int)
+             | ComplexFrC of (int * int * int * int)
+             | ComplexFnC of (int * int * float)
+             | ComplexNfC of (float * int * int)
+             | ComplexNC of (float * float)
              | PinfC
              | NinfC
              | NanC 
@@ -32,7 +38,10 @@ type exprC = IntC of int
 type value = Int of int
              | Frac of (int * int)
              | Num of float
-             | Complex of (int * int)
+             | ComplexFr of (int * int * int * int)
+             | ComplexFn of (int * int * float)
+             | ComplexNf of (float * int * int)
+             | ComplexN of (float * float)
              | Pinf
              | Ninf
              | Nan 
@@ -56,6 +65,7 @@ val valToString : value -> string
 (* helper methods *)
 val toNum : value -> value
 val gcm : int -> int -> int
+val isPos : value -> bool
 val simplify_frac : value -> value
 val arithEval : string -> value -> value -> value
 val compEval : string -> value -> value -> value

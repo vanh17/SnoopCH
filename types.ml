@@ -5,7 +5,10 @@ exception Interp of string       (* Use for interpreter errors *)
 type exprS = IntS of int
              | FracS of (int * int)
              | NumS of float
-             | ComplexS of (int * int)
+             | ComplexFrS of (int * int * int * int)
+             | ComplexFnS of (int * int * float)
+             | ComplexNfS of (float * int * int)
+             | ComplexNS of (float * float)
              | PinfS
              | NinfS
              | NanS  
@@ -23,7 +26,10 @@ type exprS = IntS of int
 type exprC = IntC of int
              | FracC of (int * int)
              | NumC of float
-             | ComplexC of (int * int)
+             | ComplexFrC of (int * int * int * int)
+             | ComplexFnC of (int * int * float)
+             | ComplexNfC of (float * int * int)
+             | ComplexNC of (float * float)
              | PinfC
              | NinfC
              | NanC 
@@ -38,7 +44,10 @@ type exprC = IntC of int
 type value = Int of int
              | Frac of (int * int)
              | Num of float
-             | Complex of (int * int)
+             | ComplexFr of (int * int * int * int)
+             | ComplexFn of (int * int * float)
+             | ComplexNf of (float * int * int)
+             | ComplexN of (float * float)
              | Pinf 
              | Ninf 
              | Nan 
@@ -65,6 +74,11 @@ let toNum fr = match fr with
                | _ -> raise (Interp "interpErr: not a fraction")
 
 let rec gcm x y = if y = 0 then x else gcm y (x mod y)
+
+let isPos x = match x with
+              | Int i -> i > 0
+              | Num i -> i > 0.0
+              | Frac (x, y) -> x * y > 0
 
 let simplify_frac fr = match fr with
                        | Frac (_, 0) -> raise (Interp "interpErr: zero denumerator")
@@ -126,6 +140,10 @@ let eqEval v1 v2 = match (v1, v2) with
 let rec desugar exprS = match exprS with
   | IntS i        -> IntC i
   | NumS i          -> NumC i
+  | ComplexFrS i -> ComplexFrC i
+  | ComplexFnS i -> ComplexFnC i
+  | ComplexNfS i -> ComplexNfC i
+  | ComplexNS i  -> ComplexNC i
   | PinfS         -> PinfC 
   | NinfS         -> NinfC 
   | NanS          -> NanC 
@@ -146,6 +164,10 @@ let rec desugar exprS = match exprS with
 let rec interp env r = match r with
   | IntC i        -> Int i
   | NumC i        -> Num i
+  | ComplexFrC i  -> ComplexFr i
+  | ComplexFnC i  -> ComplexFn i
+  | ComplexNfC i  -> ComplexNf i
+  | ComplexNC i   -> ComplexN i
   | PinfC         -> Pinf
   | NinfC         -> Ninf 
   | NanC          -> Nan 
@@ -170,6 +192,10 @@ let rec valToString r = match r with
   | Int i                   -> string_of_int i
   | Frac (i1, i2)           -> (string_of_int i1) ^ "/" ^ (string_of_int i2)
   | Num i                   -> string_of_float i
+  | ComplexFn (i1, i2, i3)  -> (valToString (evaluate (FracC (i1, i2)))) ^ (if i3 > 0.0 then "+" else "-") ^ (string_of_float i3) ^ "i"
+  | ComplexNf (i1, i2, i3)  -> (string_of_float i1) ^ (if i2 * i3 > 0 then "+" else "") ^ (valToString (evaluate (FracC (i2, i3)))) ^ "i"
+  | ComplexFr (i1, i2, i3, i4) -> (valToString (evaluate (FracC (i1, i2)))) ^ (if i3 * i4 > 0 then "+" else "") ^ (valToString (evaluate (FracC (i3, i4)))) ^ "i"
+  | ComplexN (i1, i2)       -> (string_of_float i1) ^ (if i2 > 0.0 then "+" else "") ^ (string_of_float i2) ^ "i"
   | Pinf                    -> "+inf.0"
   | Ninf                    -> "-inf.0"
   | Nan                     -> "+nan.0"

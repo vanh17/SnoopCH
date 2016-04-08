@@ -15,6 +15,15 @@ let dblsemi = ";;"
 let float = sign? (digit+ '.' | digit* frac) exp?
 let int = sign? (digit+)
 let fract = sign? (digit+) '/' (digit+)
+let comf = (fract+) ['+' '-'] (digit+) '/' (digit+) "i"
+let comfn = (fract+) ['+' '-'] (digit+ '.' | digit* frac) exp? "i"
+let comnf = (float+) ['+' '-'] (digit+) '/' (digit+) "i"
+let comfn = (float+) ['+' '-'] (digit+ '.' | digit* frac) exp? "i"
+let comi  = (int+) ['+' '-'] (digit+) "i"
+let comin  = (int+) ['+' '-'] (digit+ '.' | digit* frac) exp? "i"
+let comif  = (int+) ['+' '-'] (digit+) '/' (digit+) "i"
+let comfi  = (fract+) ['+' '-'] (digit+) "i"
+let comni  = (float+) ['+' '-'] (digit+) "i"
 let pinf = "+inf.0"
 let ninf = "-inf.0"
 let nan = "+nan.0"
@@ -29,8 +38,20 @@ rule token = parse
   | false       { FALSE }
   | dblsemi     { DBLSEMI }
   | float as x  { FLOAT (float_of_string x) }
-  | int as x    { INT (int_of_string x) }
-  | fract as x  { FRAC ((int_of_string (if ((String.sub x 0 1) = "+") then String.sub x 1 ((String.index x '/') - 1) else String.sub x 0 (String.index x '/')), int_of_string (String.sub x ((String.index x '/') + 1) ((String.length x) - (String.index x '/') - 1)))) }
+  | int as x    { INT (int_of_float (float_of_string x)) }
+  | (sign? (digit+) as x) '/' (digit+ as y)  { FRAC (int_of_float (float_of_string x), int_of_string y) } 
+  | (sign? (digit+) as x1) '/' ((digit+) as x2 ) (['+' '-'] (digit+) as x3) '/' ((digit+) as x4) "i" { COMF (int_of_float (float_of_string x1), int_of_string x2, int_of_float (float_of_string x3), int_of_string x4) }
+  | (sign? (digit+) as x1) '/' ((digit+) as x2 ) (['+' '-'] (digit+ '.' | digit* frac) exp? as x3) "i" { COMFN (int_of_float (float_of_string x1), int_of_string x2, float_of_string x3) }
+  | (float+ as x1) (['+' '-'] (digit+) as x2) '/' ((digit+) as x3) "i" { COMNF (float_of_string x1, int_of_float (float_of_string x2), int_of_string x3) }
+  | (float+ as x1) (['+' '-'] (digit+ '.' | digit* frac) exp? as x2) "i" { COMN (float_of_string x1, float_of_string x2) }
+  | (int+ as x1) (['+' '-'] (digit+) as x2) "i" { COMF (int_of_float (float_of_string x1), 1, int_of_float (float_of_string x2), 1) }
+  | (int+ as x1) (['+' '-'] (digit+) as x2) '/' ((digit+) as x3) "i" { COMF (int_of_float (float_of_string x1), 1, int_of_float (float_of_string x2), int_of_string x3) }
+  | (int+ as x1) (['+' '-'] (digit+ '.' | digit* frac) exp? as x2) "i" { COMFN (int_of_float (float_of_string x1), 1, float_of_string x2) }
+  | (float+ as x1) (['+' '-'] (digit+) as x2) "i" { COMNF (float_of_string x1, int_of_float (float_of_string x2), 1) }
+  | (sign? (digit+) as x1) '/' ((digit+) as x2 ) (['+' '-'] (digit+) as x3) "i" { COMF (int_of_float (float_of_string x1), int_of_string x2, int_of_float (float_of_string x3), 1) }
+  | (int+ as x1) (['+' '-'] as x2) "i" { COMF (int_of_float (float_of_string x1), 1, int_of_string (if x2 = '+' then "1" else "-1"), 1) }
+  | (float+ as x1) (['+' '-'] as x2) "i" { COMNF (float_of_string x1, int_of_string (if x2 = '+' then "1" else "-1"), 1) }
+  | (sign? (digit+) as x1) '/' ((digit+) as x2 ) (['+' '-'] as x3) "i" { COMF (int_of_float (float_of_string x1), int_of_string x2, int_of_string (if x3 = '+' then "1" else "-1"), 1) }
   | "+inf.0"    { PINF }
   | "-inf.0"    { NINF }
   | "+nan.0"    { NAN }
