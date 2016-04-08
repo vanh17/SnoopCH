@@ -57,9 +57,28 @@ let bind str v env = (str, v) :: env
    You may be asked to add methods here. You may also choose to add your own
    helper methods here.
 *)
+let toNum fr = match fr with
+               | Frac (x, y) -> Num ((float_of_int x) /. (float_of_int y))
+               | _ -> raise (Interp "interpErr: not a fraction")
+
+let rec gcm x y = if y = 0 then x else gcm y (x mod y)
+
+let simplify_frac fr = match fr with
+                       | Frac (_, 0) -> raise (Interp "interpErr: zero denumerator")
+                       | Frac (0, _) -> Int 0
+                       | Frac (x, y) -> let t = x / y 
+                                        in if (t * y = x) then Int t 
+                                           else let g = gcm x y 
+                                                in  Frac (x / g, y /g)
+
+               
 let rec arithEval op v1 v2 = match (op, v1, v2) with
                          | (_, Num x, Int y) -> arithEval op v1 (Num (float_of_int y))
                          | (_, Int x, Num y) -> arithEval op (Num (float_of_int x)) v2
+                         | (_, Frac (x1, x2), Int y) -> arithEval op v1 (Frac (y, 1))
+                         | (_, Int x, Frac (y1, y2)) -> arithEval op (Frac (x, 1)) v2
+                         | (_, Frac (x1, x2), Num y) -> arithEval op (toNum v1) v2
+                         | (_, Num x, Frac (y1, y2)) -> arithEval op v1 (toNum v2)
                          | ("/", Num x, Num 0.0) -> if (x = 0.0) then Nan 
                                                     else if (x > 0.0) then Pinf 
                                                          else Ninf
@@ -76,6 +95,11 @@ let rec arithEval op v1 v2 = match (op, v1, v2) with
                          | ("*", Int x, Int y) -> Int (x * y)
                          | ("/", Int x, Int y) -> Int (x / y)
                          | (_, Int x, Int y) -> raise (Interp "interpErr: only +, -, *")
+                         | ("+", Frac (x1, x2), Frac (y1, y2)) -> simplify_frac (Frac (x1 * y2 + y1 * x2, x2 * y2)) 
+                         | ("-", Frac (x1, x2), Frac (y1, y2)) -> simplify_frac (Frac (x1 * y2 - y1 * x2, x2 * y2))
+                         | ("*", Frac (x1, x2), Frac (y1, y2)) -> simplify_frac (Frac (x1 * y1, x2 * y2))
+                         | ("/", Frac (x1, x2), Frac (y1, y2)) -> simplify_frac (Frac (x1 * y2, x2 * y1))
+                         | (_, Frac (x1, x2), Frac (y1, y2)) -> raise (Interp "interpErr: only +, -, *")
                          | _ -> raise (Interp "interpErr: not a num")
 
 
@@ -123,9 +147,7 @@ let rec interp env r = match r with
   | NinfC         -> Ninf 
   | NanC          -> Nan 
   | BoolC i       -> Bool i
-  | FracC (v1, v2)   -> if (v2 = 0) then raise (Interp "interpErr: zero denumerator")
-                        else if (v1 = 0) then Int 0
-                             else Frac (v1, v2)
+  | FracC (v1, v2)   -> simplify_frac (Frac (v1, v2))
   | IfC (i1, i2, i3) -> ( match (interp env i1) with
                           | Bool i1' -> if (i1') then interp env i2 
                                                  else interp env i3

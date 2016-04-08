@@ -43,7 +43,7 @@ rule token = parse
   | "+"         { PLUS }
   | "-"         { MINUS }
   | "*"         { TIMES }
-  | "/ "        { DIVIDE }
+  | "/"        { DIVIDE }
   | "=="        { EQ }
   | "!="        { NEQ }
   | comp as s   { COMPOP s}

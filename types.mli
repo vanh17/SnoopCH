@@ -51,6 +51,9 @@ val evaluate : exprC -> value
 val valToString : value -> string
 
 (* helper methods *)
+val toNum : value -> value
+val gcm : int -> int -> int
+val simplify_frac : value -> value
 val arithEval : string -> value -> value -> value
 val compEval : string -> value -> value -> value
 val eqEval : value -> value -> value
