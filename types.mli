@@ -67,6 +67,10 @@ val toNum : value -> value
 val gcm : int -> int -> int
 val isPos : value -> bool
 val simplify_frac : value -> value
+val simplify_complex : value -> value
+val conjugate : value -> value
+val toComplexN : value -> value
+val isComplex : value -> bool 
 val arithEval : string -> value -> value -> value
 val compEval : string -> value -> value -> value
 val eqEval : value -> value -> value
