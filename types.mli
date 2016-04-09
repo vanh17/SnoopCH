@@ -20,6 +20,8 @@ type exprS = IntS of int
              | CompS of string * exprS * exprS
              | EqS of exprS * exprS
              | NeqS of exprS * exprS
+             | CondS of (exprS * exprS) list
+             | EmptyS
 type exprC = IntC of int
              | FracC of (int * int)
              | NumC of float
@@ -35,6 +37,8 @@ type exprC = IntC of int
              | ArithC of string * exprC * exprC
              | CompC of string * exprC * exprC
              | EqC of exprC * exprC
+             | CondC of (exprC * exprC) list
+             | EmptyC
 type value = Int of int
              | Frac of (int * int)
              | Num of float
@@ -46,6 +50,7 @@ type value = Int of int
              | Ninf
              | Nan 
              | Bool of bool
+             | Empty
 
 
 (* Environment lookup *)
@@ -74,3 +79,4 @@ val isComplex : value -> bool
 val arithEval : string -> value -> value -> value
 val compEval : string -> value -> value -> value
 val eqEval : value -> value -> value
+val condEval : (exprC * exprC) list -> exprC

@@ -169,20 +169,8 @@ let t6j = try (evaluate (desugar (ArithS ("+ ", NumS 0.0, NumS 0.00))); false) w
 let t6i = try (evaluate (desugar (ArithS ("/.", NumS 0.0, ArithS ("+", NumS 0.00, BoolS true)))); false) with Interp "interpErr: not a num" -> true
                                                                              | _ -> false
 
-let t61j = evaluate (desugar (ArithS ("/", NumS 0.0, NumS 0.00))) = Nan "+nan.0"
-
-let t62j = evaluate (desugar (ArithS ("/", IntS 0, NumS 0.00))) = Nan "+nan.0"
-
-let t62j = evaluate (desugar (ArithS ("/", NumS 0.0, IntS 0))) = Nan "+nan.0"
-
 let t61i = try (evaluate (desugar (ArithS ("/.", NumS 0.0, ArithS ("+", NumS 0.00, BoolS true)))); false) with Interp "interpErr: not a num" -> true
                                                                              | _ -> false 
-
-let t62i = evaluate (desugar (ArithS ("/", NumS 1.0, NumS 0.00))) = Pinf max_float
-
-let t63i = evaluate (desugar (ArithS ("/", IntS 1, NumS 0.00))) = Pinf max_float
-
-let t64i = evaluate (desugar (ArithS ("/", NumS (-. 3.0), IntS 0))) = Ninf (-. max_float)
 
 let t65i = evaluate (desugar (ArithS ("/", NumS 1.0, IntS 1))) = Num 1.0
 
@@ -286,26 +274,24 @@ let t11g = evaluate (desugar (NeqS (IfS (BoolS true, NumS 4.5, NumS 0.9), IfS (B
 
 let t11h = evaluate (desugar (NeqS (NeqS (NumS 2.5, NumS 4.5), NeqS (NumS 2.5, NumS 4.5)))) = Bool false                                                                           
 
-let t11i = evaluate (desugar (NeqS (ArithS ("*", NumS 5.0, NumS 10.0), ArithS ("-", NumS 50.0, NumS 0.0)))) = Bool false                                                                            
+let t11i = evaluate (desugar (NeqS (ArithS ("*", NumS 5.0, NumS 10.0), ArithS ("-", NumS 50.0, NumS 0.0)))) = Bool false                                                                                                                                                    
 
-let t12g = evaluate (desugar (ArithS ("/", NumS 4.5, NumS 0.0))) = Pinf max_float
+let t13a = evaluate (desugar (FracS (4, 1))) = Int 4                                                                       
 
-let t12h = evaluate (desugar (ArithS ("/", NumS (-. 8.5), NumS 0.0))) = Ninf (-. max_float)                                                                        
+let t13e = evaluate (desugar (FracS (0, 2))) = Int 0
 
-let t12i = evaluate (desugar (ArithS ("/", NumS 0.0, NumS 0.0))) = Nan "+nan.0"
+let t14a = desugar (CondS [(FracS (1, 4), IntS 4); (IfS (BoolS true, ComplexNS (2.4, 0.0), ComplexNfS (3.5, 2, 3)), ArithS ("* ", ComplexFrS (1, 2, 3, 4), ComplexFnS (1, 4, 5.0)))])
+         = CondC [(FracC (1, 4), IntC 4); (IfC (BoolC true, ComplexNC(2.4, 0.0), ComplexNfC (3.5, 2, 3)), ArithC ("* ", ComplexFrC (1, 2, 3, 4), ComplexFnC (1, 4, 5.0)))]
 
-let t13a = evaluate (desugar (FracS (IntS 4, IntS 1))) = Frac (Int 4, Int 1)
+let t14b = desugar (CondS [])  = CondC []
 
-let t13b = try (evaluate (desugar (FracS (NumS (-. 8.5), IntS 0))); false) 
-           with Interp "interpErr: not an int" -> true
-           | _ -> false                                                                       
+let t14c = try (evaluate (desugar (CondS [])); false)
+           with Interp "interpErr: conds need at least one conditon" -> true
+           | _ -> false  
 
-let t13c = try (evaluate (desugar (FracS (ArithS ("+", IntS 1, NumS 3.5), ArithS ("-", IntS 1, IntS 1)))); false)
-           with Interp "interpErr: not an int" -> true
-           | _ -> false
+let t14d = evaluate (desugar (CondS [(BoolS false, IntS 3); (IfS (EqS (IntS 4, ArithS ("-", IntS 5, IntS 1)), BoolS true, BoolS false), ArithS ("+", ComplexFrS (10, 5, 4, 1), ComplexFnS (-10, 5, (-.4.))))]))  
+         = Num 0.0    
 
-let t13d = try (evaluate (desugar (FracS (ArithS ("+", IntS 1, IntS 3), ArithS ("-", IntS 1, IntS 1)))); false)
-           with Interp "interpErr: zero denumerator" -> true
-           | _ -> false
-let t13e = evaluate (desugar (FracS (IntS 0, IntS 2))) = Int 0
+let t14e = evaluate (desugar (CondS [(BoolS false, IntS 3); (IfS (EqS (IntS 4, ArithS ("-", IntS 5, IntS 1)), BoolS true, BoolS false), ArithS ("-", ComplexFrS (10, 5, 4, 1), ComplexFrS (10, 5, 4, 1 )))]))  
+         = Int 0
 

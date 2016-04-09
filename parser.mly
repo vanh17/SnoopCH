@@ -12,6 +12,7 @@
 %token PINF
 %token NINF
 %token NAN
+%token COND
 %token TRUE FALSE
 %token IF THEN ELSE
 %token OR AND NOT
