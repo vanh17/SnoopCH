@@ -88,6 +88,28 @@ let simplify_frac fr = match fr with
                                            else let g = gcm x y 
                                                 in  Frac (x / g, y /g)
 
+let simplify_complex c = match c with 
+                         | ComplexFn (i1, i2, i3) -> let t = simplify_frac (Frac (i1, i2))
+                                                     in if (i3 = 0.0) then t else let v =  gcm i1 i2
+                                                                                  in ComplexFn (i1/v, i2/v, i3)
+                         | ComplexN (i1, i2) -> if i2 = 0.0 then Num i1 else ComplexN (i1, i2)
+                         | ComplexNf (i1, i2, i3) -> let t = simplify_frac (Frac (i2, i3))
+                                                     in if (t = Int 0) then Num i1 else let v =  gcm i2 i3
+                                                                                        in ComplexNf (i1, i2/v, i3/v)
+                         | ComplexFr (i1, i2, i3 , i4) -> let (f1, f2) = (simplify_frac (Frac (i1, i2)), simplify_frac (Frac (i3, i4)))
+                                                          in if f2 = Int 0 then f1 else let (g1, g2) = (gcm i1 i2, gcm i3 i4)
+                                                                                        in ComplexFr (i1/g1, i2/g1, i3/g2, i4/g2)
+
+let conjugate c = match c with
+                  | ComplexFn (i1, i2, i3) -> simplify_complex (ComplexFn (i1, i2, i3 *. (-.1)))
+                  | ComplexN (i1, i2) -> if i2 = 0.0 then Num i1 else ComplexN (i1, i2)
+                         | ComplexNf (i1, i2, i3) -> let t = simplify_frac (Frac (i2, i3))
+                                                     in if (t = Int 0) then Num i1 else let v =  gcm i2 i3
+                                                                                        in ComplexNf (i1, i2/v, i3/v)
+                         | ComplexFr (i1, i2, i3 , i4) -> let (f1, f2) = (simplify_frac (Frac (i1, i2)), simplify_frac (Frac (i3, i4)))
+                                                          in if f2 = Int 0 then f1 else let (g1, g2) = (gcm i1 i2, gcm i3 i4)
+                                                                                        in ComplexFr (i1/g1, i2/g1, i3/g2, i4/g2)
+
                
 let rec arithEval op v1 v2 = match (op, v1, v2) with
                          | (_, Num x, Int y) -> arithEval op v1 (Num (float_of_int y))
@@ -117,7 +139,41 @@ let rec arithEval op v1 v2 = match (op, v1, v2) with
                          | ("*", Frac (x1, x2), Frac (y1, y2)) -> simplify_frac (Frac (x1 * y1, x2 * y2))
                          | ("/", Frac (x1, x2), Frac (y1, y2)) -> simplify_frac (Frac (x1 * y2, x2 * y1))
                          | (_, Frac (x1, x2), Frac (y1, y2)) -> raise (Interp "interpErr: only +, -, *")
-                         | _ -> raise (Interp "interpErr: not a num")
+
+                         | ("+", ComplexFr (x1, x2, x3, x4), ComplexFr (y1, y2, y3, y4)) -> ( match (arithEval "+" (Frac (x1, x2)) (Frac (y1, y2)), arithEval "+" (Frac (x1, x2)) (Frac (y1, y2))) with
+                                                                                              | (f1, Int 0) -> f1
+                                                                                              | (Int i1, Int i2) -> ComplexFr (i1, 1, i2, 1)
+                                                                                              | (Int i1, Frac (i2, i3)) -> ComplexFr (i1, 1, i2, i3)
+                                                                                              | (Frac (i1, i2), Int i3) -> ComplexFr (i1, i2, i3, 1)
+                                                                                              | (Frac (i1, i2), Frac (i3, i4)) -> ComplexFr (i1, i2, i3, i4))
+                         | ("-", ComplexFr (x1, x2, x3, x4), ComplexFr (y1, y2, y3, y4)) -> ( match (arithEval "-" (Frac (x1, x2)) (Frac (y1, y2)), arithEval "-" (Frac (x1, x2)) (Frac (y1, y2))) with
+                                                                                              | (f1, Int 0) -> f1
+                                                                                              | (Int i1, Int i2) -> ComplexFr (i1, 1, i2, 1)
+                                                                                              | (Int i1, Frac (i2, i3)) -> ComplexFr (i1, 1, i2, i3)
+                                                                                              | (Frac (i1, i2), Int i3) -> ComplexFr (i1, i2, i3, 1)
+                                                                                              | (Frac (i1, i2), Frac (i3, i4)) -> ComplexFr (i1, i2, i3, i4)
+                         | ("*", ComplexFr (x1, x2, x3, x4), ComplexFr (y1, y2, y3, y4)) -> ( match (arithEval "-" (arithEval "*" (Frac (x1, x2)) (Frac (y1, y2))) (arithEval "*" (Frac (x3, x4)) (Frac (y3, y4))), arithEval "+" (arithEval "*" (Frac (x1, x2)) (Frac (y3, y4))) (arithEval "*" (Frac (x1, x2)) (Frac (y3, y4)))) with
+                                                                                              | (f1, Int 0) -> f1
+                                                                                              | (Int i1, Int i2) -> ComplexFr (i1, 1, i2, 1)
+                                                                                              | (Int i1, Frac (i2, i3)) -> ComplexFr (i1, 1, i2, i3)
+                                                                                              | (Frac (i1, i2), Int i3) -> ComplexFr (i1, i2, i3, 1)
+                                                                                              | (Frac (i1, i2), Frac (i3, i4)) -> ComplexFr (i1, i2, i3, i4)
+                         | ("/", ComplexFr (x1, x2, x3, x4), ComplexFr (y1, y2, y3, y4)) -> arithEval "*" v1 (conjugate v2)
+                         | (_, ComplexFr (x1, x2, x3, x4), ComplexFr (y1, y2, y3, y4)) -> raise (Interp "interpErr: only +, -, *")
+                         | (_, ComplexFn (x1, x2, x3), ComplexFn (y1, y2, y3)) -> arithEval op (ComplexN ((float_of_int x1) /. (float_of_int x2), x3)) (ComplexN ((float_of_int y1) /. (float_of_int y2), y3))
+                         | (_, ComplexNf (x1, x2, x3), ComplexNf (y1, y2, y3)) -> arithEval op (ComplexN (x1, (float_of_int x2) /. (float_of_int x3))) (ComplexN (y1, (float_of_int y2) /. (float_of_int y3)))
+                         | ("+", ComplexN (x1, x2), ComplexN (y1, y2)) -> ( match (arithEval "+" (Num x1) (Num y1), arithEval "+" (Num x2) (Num y2)) with
+                                                                            | (f1, Num 0.0) -> f1
+                                                                            | (Num i1, Num i2) -> ComplexN (i1, i2) )
+                         | ("-", ComplexN (x1, x2), ComplexN (y1, y2)) -> ( match (arithEval "-" (Num x1) (Num y1), arithEval "-" (Num x2) (Num y2)) with
+                                                                            | (f1, Num 0.0) -> f1
+                                                                            | (Num i1, Num i2) -> ComplexN (i1, i2) )
+                         | ("*", ComplexN (x1, x2), ComplexN (y1, y2)) -> ( match (arithEval "-" (arithEval "*" (Num x1) (Num y1)) (arithEval "*" (Num x2) (Num y2)), arithEval "+" (arithEval "*" (Num x1) (Num y2)) (arithEval "*" (Num x2) (Num y1))) with
+                                                                            | (f1, Int 0) -> f1
+                                                                            | (Num i1, Num i2) -> ComplexN (i1, i2) )
+                         | ("/", ComplexN (x1, x2), ComplexN (y1, y2)) -> arithEval "*" v1 (conjugate v2)
+                         | (_, ComplexN (x1, x2), ComplexN (y1, y2)) -> raise (Interp "interpErr: only +, -, *") 
+                         | (_, e1, e2) -> if ((isComplex e1) && (isComplex e2)) then arithEval op (toComplexN e1) (toComplexN e2) else raise (Interp "interpErr: not a num")
 
 
 let compEval op v1 v2 = match (op, v1, v2) with
@@ -164,10 +220,10 @@ let rec desugar exprS = match exprS with
 let rec interp env r = match r with
   | IntC i        -> Int i
   | NumC i        -> Num i
-  | ComplexFrC i  -> ComplexFr i
-  | ComplexFnC i  -> ComplexFn i
-  | ComplexNfC i  -> ComplexNf i
-  | ComplexNC i   -> ComplexN i
+  | ComplexFrC i  -> simplify_complex (ComplexFr i)
+  | ComplexFnC i  -> simplify_complex (ComplexFn i)
+  | ComplexNfC i  -> simplify_complex (ComplexNf i)
+  | ComplexNC i   -> simplify_complex (ComplexN i)
   | PinfC         -> Pinf
   | NinfC         -> Ninf 
   | NanC          -> Nan 
