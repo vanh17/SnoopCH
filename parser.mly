@@ -42,6 +42,13 @@ headEx:
   | expr                         { $1 }
 ;
 
+pairExpr:
+  | (expr, expr)                 { $1 }
+;
+
+listPairExpr:                
+  | pairExpr :: listPairExpr     { $1 }
+
 expr:
   | FLOAT                        { NumS $1 }
   | INT                          { IntS $1 }
