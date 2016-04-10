@@ -20,6 +20,8 @@
 %token EMPTY
 %token LIST
 %token SQUOTE
+%token CAR
+%token CDR
 %token CONS
 %token TRUE FALSE
 %token IF THEN ELSE
@@ -91,5 +93,7 @@ expr:
   | OPAREN LIST listExpr             { ListS $3 }
   | SQUOTE OPAREN listExpr           { ListS $3 }
   | OPAREN CONS expr expr CPAREN     { PairS ($3, $4) }
+  | OPAREN CAR expr CPAREN           { CarS $3 }
+  | OPAREN CDR expr CPAREN           { CdrS $3 }
 ;
 

@@ -25,6 +25,8 @@ type exprS = IntS of int
              | EmptyS
              | ListS of exprS list
              | PairS of exprS * exprS
+             | CarS of exprS
+             | CdrS of exprS
 
 (* You will need to add more cases here. *)
 type exprC = IntC of int
@@ -46,6 +48,8 @@ type exprC = IntC of int
              | EmptyC
              | ListC of exprC list
              | PairC of exprC * exprC
+             | CarC of exprC
+             | CdrC of exprC
 
 
 (* You will need to add more cases here. *)
@@ -276,6 +280,8 @@ let rec desugar exprS = match exprS with
   | CondS i             -> CondC (List.map (fun (x, y) -> (desugar x, desugar y)) i) 
   | ListS i             -> ListC (List.map (fun (x) -> desugar x) i) 
   | PairS (x, y)        -> PairC (desugar x, desugar y)
+  | CarS i              -> CarC (desugar i)
+  | CdrS i              -> CdrC (desugar i)
 
 
 (* You will need to add cases here. *)
@@ -303,10 +309,18 @@ let rec interp env r = match r with
   | CondC i             -> if i = [] then raise (Interp "interpErr: cond constructor needs at least one conditon")
                            else interp env (condEval i)
   | ListC i             -> List (List.map (fun (x) -> interp env x) i)
-  | PairC (e1, e2)        -> let (v1, v2) = (interp env e1, interp env e2) 
-                             in ( match v2 with
-                                  | List l2 -> List (v1 :: l2)
-                                  | _ -> Pair (v1, v2) )
+  | PairC (e1, e2)      -> let (v1, v2) = (interp env e1, interp env e2) 
+                           in ( match v2 with
+                                | List l2 -> List (v1 :: l2)
+                                | _ -> Pair (v1, v2) )
+  | CarC i              -> ( match (interp env i) with
+                             | Pair (v1, v2) -> v1
+                             | List (v1 :: rest) -> v1
+                             | _ -> raise (Interp "car: expected pair? or list?") ) 
+  | CdrC i              -> ( match (interp env i) with
+                             | Pair (v1, v2) -> v2
+                             | List (v1 :: rest) -> List rest
+                             | _ -> raise (Interp "cdr: expected pair? or list?") )
 
 
 (* evaluate : exprC -> val *)

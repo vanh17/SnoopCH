@@ -24,6 +24,8 @@ type exprS = IntS of int
              | EmptyS
              | ListS of exprS list
              | PairS of exprS * exprS
+             | CarS of exprS
+             | CdrS of exprS
 type exprC = IntC of int
              | FracC of (int * int)
              | NumC of float
@@ -43,6 +45,8 @@ type exprC = IntC of int
              | EmptyC
              | ListC of exprC list
              | PairC of exprC * exprC
+             | CarC of exprC
+             | CdrC of exprC
 type value = Int of int
              | Frac of (int * int)
              | Num of float

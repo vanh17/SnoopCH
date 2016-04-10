@@ -47,6 +47,8 @@ rule token = parse
   | ""          { EMPTY }
   | "list"      { LIST }
   | "'"         { SQUOTE }
+  | "car"       { CAR }
+  | "cdr"       { CDR }
   | "cons"      { CONS }
   | "("         { OPAREN }
   | ")"         { CPAREN }
