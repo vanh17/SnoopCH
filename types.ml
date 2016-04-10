@@ -283,7 +283,7 @@ let rec interp env r = match r with
   | ArithC (op, v1, v2) -> arithEval op (interp env v1) (interp env v2)
   | CompC (op, v1, v2)  -> compEval op (interp env v1) (interp env v2)
   | EqC (v1, v2)        -> eqEval (interp env v1) (interp env v2)
-  | CondC i             -> if i = [] then raise (Interp "interpErr: conds need at least one conditon")
+  | CondC i             -> if i = [] then raise (Interp "interpErr: cond constructor needs at least one conditon")
                            else interp env (condEval i)
 
 

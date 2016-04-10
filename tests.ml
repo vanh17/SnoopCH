@@ -286,7 +286,7 @@ let t14a = desugar (CondS [(FracS (1, 4), IntS 4); (IfS (BoolS true, ComplexNS (
 let t14b = desugar (CondS [])  = CondC []
 
 let t14c = try (evaluate (desugar (CondS [])); false)
-           with Interp "interpErr: conds need at least one conditon" -> true
+           with Interp "interpErr: cond constructor needs at least one conditon" -> true
            | _ -> false  
 
 let t14d = evaluate (desugar (CondS [(BoolS false, IntS 3); (IfS (EqS (IntS 4, ArithS ("-", IntS 5, IntS 1)), BoolS true, BoolS false), ArithS ("+", ComplexFrS (10, 5, 4, 1), ComplexFnS (-10, 5, (-.4.))))]))  

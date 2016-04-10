@@ -12,6 +12,8 @@
 %token PINF
 %token NINF
 %token NAN
+%token OPAREN
+%token CPAREN
 %token OSB
 %token CSB
 %token COND
@@ -42,37 +44,39 @@ headEx:
   | expr                         { $1 }
 ;
 
-pairExpr:
-  | (expr, expr)                 { $1 }
+listPairExpr: 
+  | CPAREN                       { [] }                
+  | pairExpr listPairExpr        { ($1) :: ($2) }
 ;
 
-listPairExpr:                
-  | pairExpr :: listPairExpr     { $1 }
+pairExpr:
+  | OSB expr expr CSB            { ($2, $3) }
+;
 
 expr:
-  | FLOAT                        { NumS $1 }
-  | INT                          { IntS $1 }
-  | FRAC                         { FracS $1 }
-  | COMF                         { ComplexFrS $1 }
-  | COMFN                        { ComplexFnS $1 }
-  | COMNF                        { ComplexNfS $1 }
-  | COMN                         { ComplexNS $1 }
-  | PINF                         { PinfS }
-  | NINF                         { NinfS }
-  | NAN                          { NanS }
-  | TRUE                         { BoolS true }
-  | FALSE                        { BoolS false }
-  | COND  OSB expr expr CSB      { CondS [($3, $4)] }              
-  | IF expr THEN expr ELSE expr  { IfS ($2, $4, $6) }
-  | OR expr expr                 { OrS ($2, $3) }
-  | AND expr expr                { AndS ($2, $3) }
-  | NOT expr                     { NotS $2 }
-  | PLUS expr expr               { ArithS ("+", $2, $3) }
-  | MINUS expr expr              { ArithS ("-", $2, $3) }
-  | TIMES expr expr              { ArithS ("*", $2, $3) }
-  | DIVIDE expr expr             { ArithS ("/", $2, $3) }
-  | COMPOP expr expr             { CompS ($1, $2, $3) }
-  | EQ expr expr                 { EqS ($2, $3) }
-  | NEQ expr expr                { NeqS ($2, $3) }
+  | FLOAT                            { NumS $1 }
+  | INT                              { IntS $1 }
+  | FRAC                             { FracS $1 }
+  | COMF                             { ComplexFrS $1 }
+  | COMFN                            { ComplexFnS $1 }
+  | COMNF                            { ComplexNfS $1 }
+  | COMN                             { ComplexNS $1 }
+  | PINF                             { PinfS }
+  | NINF                             { NinfS }
+  | NAN                              { NanS }
+  | TRUE                             { BoolS true }
+  | FALSE                            { BoolS false }
+  | OPAREN COND  listPairExpr        { CondS $3 }              
+  | OPAREN IF expr expr expr CPAREN  { IfS ($3, $4, $5) }
+  | OPAREN OR expr expr CPAREN       { OrS ($3, $4) }
+  | OPAREN AND expr expr CPAREN      { AndS ($3, $4) }
+  | OPAREN NOT expr CPAREN           { NotS $3 }
+  | OPAREN PLUS expr expr CPAREN     { ArithS ("+", $3, $4) }
+  | OPAREN MINUS expr expr CPAREN    { ArithS ("-", $3, $4) }
+  | OPAREN TIMES expr expr CPAREN    { ArithS ("*", $3, $4) }
+  | OPAREN DIVIDE expr expr CPAREN   { ArithS ("/", $3, $4) }
+  | OPAREN COMPOP expr expr CPAREN   { CompS ($2, $3, $4) }
+  | OPAREN EQ expr expr CPAREN       { EqS ($3, $4) }
+  | OPAREN NEQ expr expr CPAREN      { NeqS ($3, $4) }
 ;
 
