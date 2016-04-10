@@ -44,6 +44,10 @@ rule token = parse
   | (float+ as x1) (['+' '-'] as x2) "i" { COMNF (float_of_string x1, int_of_string (if x2 = '+' then "1" else "-1"), 1) }
   | (sign? (digit+) as x1) '/' ((digit+) as x2 ) (['+' '-'] as x3) "i" { COMF (int_of_float (float_of_string x1), int_of_string x2, int_of_string (if x3 = '+' then "1" else "-1"), 1) }
   | "cond"      { COND }
+  | ""          { EMPTY }
+  | "list"      { LIST }
+  | "'"         { SQUOTE }
+  | "cons"      { CONS }
   | "("         { OPAREN }
   | ")"         { CPAREN }
   | "["         { OSB }

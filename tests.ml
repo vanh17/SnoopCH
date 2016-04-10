@@ -297,3 +297,16 @@ let t14e = evaluate (desugar (CondS [(BoolS false, IntS 3); (IfS (EqS (IntS 4, A
 
 let t14f = evaluate (desugar (CondS [(IntS 1, IntS 3); (BoolS true, IntS 4)])) = Int 3
 
+let t15a = evaluate (desugar (ListS [IntS 3; ComplexFrS (1, 3, 4, 6); ArithS ("*", ComplexNfS (2.4, 1, 40), NumS 3.4)])) = List [Int 3; ComplexFr (1, 3, 2, 3); ComplexN (8.16, 0.085)]
+
+let t15b = desugar (ListS [IntS 3; ComplexFrS (1, 3, 4, 6); ArithS ("* ", ComplexNfS (2.4, 1, 40), NumS 3.4)])
+         = ListC [IntC 3; ComplexFrC (1, 3, 4, 6); ArithC ("* ", ComplexNfC (2.4, 1, 40), NumC 3.4)]
+
+let t15c = evaluate (desugar (ListS [])) = List []
+
+let t16a = evaluate (desugar (PairS (IntS 3, PairS (IntS 4, PairS (IntS 4, BoolS true))))) = Pair (Int 3, Pair (Int 4, Pair (Int 4, Bool true)))
+
+let t16b = evaluate (desugar (PairS (IntS 3, PairS (IntS 4, PairS (IntS 4, ListS []))))) = List [Int 3; Int 4; Int 4]
+
+let t16c = evaluate (desugar (PairS (IntS 3, PairS (IntS 4, PairS (IntS 4, ListS [PairS (IntS 3, BoolS true)]))))) = List [Int 3; Int 4; Int 4; Pair (Int 3, Bool true)]
+

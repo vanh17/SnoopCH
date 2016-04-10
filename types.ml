@@ -23,6 +23,8 @@ type exprS = IntS of int
              | NeqS of exprS * exprS
              | CondS of (exprS * exprS) list
              | EmptyS
+             | ListS of exprS list
+             | PairS of exprS * exprS
 
 (* You will need to add more cases here. *)
 type exprC = IntC of int
@@ -42,6 +44,8 @@ type exprC = IntC of int
              | EqC of exprC * exprC
              | CondC of (exprC * exprC) list
              | EmptyC
+             | ListC of exprC list
+             | PairC of exprC * exprC
 
 
 (* You will need to add more cases here. *)
@@ -57,6 +61,8 @@ type value = Int of int
              | Nan 
              | Bool of bool
              | Empty
+             | List of value list
+             | Pair of value * value
 
 type 'a env = (string * 'a) list
 let empty = []
@@ -233,6 +239,15 @@ let rec condEval lst = match lst with
                        | (BoolC true, r) :: rest -> r
                        | (BoolC false, _) :: rest -> condEval rest
                        | (_, r) :: rest -> r
+
+let isPair e = match e with
+               | Pair (_, _) -> true
+               | _ -> false
+
+let isList e = match e with
+               | List i -> true
+               | _ -> false 
+
 (* INTERPRETER *)
 
 (* You will need to add cases here. *)
@@ -259,6 +274,8 @@ let rec desugar exprS = match exprS with
   | EqS (v1, v2)        -> EqC (desugar v1, desugar v2)
   | NeqS (v1, v2)       -> desugar (NotS (EqS (v1, v2)))
   | CondS i             -> CondC (List.map (fun (x, y) -> (desugar x, desugar y)) i) 
+  | ListS i             -> ListC (List.map (fun (x) -> desugar x) i) 
+  | PairS (x, y)        -> PairC (desugar x, desugar y)
 
 
 (* You will need to add cases here. *)
@@ -285,6 +302,11 @@ let rec interp env r = match r with
   | EqC (v1, v2)        -> eqEval (interp env v1) (interp env v2)
   | CondC i             -> if i = [] then raise (Interp "interpErr: cond constructor needs at least one conditon")
                            else interp env (condEval i)
+  | ListC i             -> List (List.map (fun (x) -> interp env x) i)
+  | PairC (e1, e2)        -> let (v1, v2) = (interp env e1, interp env e2) 
+                             in ( match v2 with
+                                  | List l2 -> List (v1 :: l2)
+                                  | _ -> Pair (v1, v2) )
 
 
 (* evaluate : exprC -> val *)
@@ -306,4 +328,10 @@ let rec valToString r = match r with
   | Nan                     -> "+nan.0"
   | Bool i                  -> string_of_bool i
   | Empty                   -> ""
+  | List i                  -> let rec listToString lst = match lst with
+                                                          | [] -> ""
+                                                          | e :: [] -> (valToString e)
+                                                          | e1 :: e2 :: rest -> (valToString e1) ^ " " ^ (listToString (e2 :: rest))
+                               in "'(" ^ (listToString i) ^ ")"
+  | Pair (x, y)             -> "'(" ^ (valToString x) ^ " . " ^ (valToString y) ^ ")"
 

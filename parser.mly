@@ -17,6 +17,10 @@
 %token OSB
 %token CSB
 %token COND
+%token EMPTY
+%token LIST
+%token SQUOTE
+%token CONS
 %token TRUE FALSE
 %token IF THEN ELSE
 %token OR AND NOT
@@ -44,9 +48,14 @@ headEx:
   | expr                         { $1 }
 ;
 
+listExpr:
+  | CPAREN                       { [] }
+  | expr listExpr                { $1 :: $2 }
+;
+
 listPairExpr: 
   | CPAREN                       { [] }                
-  | pairExpr listPairExpr        { ($1) :: ($2) }
+  | pairExpr listPairExpr        { $1 :: $2 }
 ;
 
 pairExpr:
@@ -78,5 +87,9 @@ expr:
   | OPAREN COMPOP expr expr CPAREN   { CompS ($2, $3, $4) }
   | OPAREN EQ expr expr CPAREN       { EqS ($3, $4) }
   | OPAREN NEQ expr expr CPAREN      { NeqS ($3, $4) }
+  | EMPTY                            { EmptyS }
+  | OPAREN LIST listExpr             { ListS $3 }
+  | SQUOTE OPAREN listExpr           { ListS $3 }
+  | OPAREN CONS expr expr CPAREN     { PairS ($3, $4) }
 ;
 
