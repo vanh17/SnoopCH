@@ -17,7 +17,7 @@
 %token OSB
 %token CSB
 %token COND
-%token EMPTY
+%token NULL
 %token LIST
 %token SQUOTE
 %token CAR
@@ -89,7 +89,7 @@ expr:
   | OPAREN COMPOP expr expr CPAREN   { CompS ($2, $3, $4) }
   | OPAREN EQ expr expr CPAREN       { EqS ($3, $4) }
   | OPAREN NEQ expr expr CPAREN      { NeqS ($3, $4) }
-  | EMPTY                            { EmptyS }
+  | NULL                             { NullS }
   | OPAREN LIST listExpr             { ListS $3 }
   | SQUOTE OPAREN listExpr           { ListS $3 }
   | OPAREN CONS expr expr CPAREN     { PairS ($3, $4) }

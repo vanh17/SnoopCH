@@ -13,6 +13,7 @@ type exprS = IntS of int
              | NinfS
              | NanS  
              | BoolS of bool
+             | EmptyS
              | IfS of exprS * exprS * exprS
              | OrS of exprS * exprS
              | AndS of exprS * exprS
@@ -22,11 +23,11 @@ type exprS = IntS of int
              | EqS of exprS * exprS
              | NeqS of exprS * exprS
              | CondS of (exprS * exprS) list
-             | EmptyS
              | ListS of exprS list
              | PairS of exprS * exprS
              | CarS of exprS
              | CdrS of exprS
+             | NullS
 
 (* You will need to add more cases here. *)
 type exprC = IntC of int
@@ -40,16 +41,17 @@ type exprC = IntC of int
              | NinfC
              | NanC 
              | BoolC of bool
+             | EmptyC
              | IfC of exprC * exprC * exprC
              | ArithC of string * exprC * exprC
              | CompC of string * exprC * exprC
              | EqC of exprC * exprC
              | CondC of (exprC * exprC) list
-             | EmptyC
              | ListC of exprC list
              | PairC of exprC * exprC
              | CarC of exprC
              | CdrC of exprC
+             | NullC
 
 
 (* You will need to add more cases here. *)
@@ -67,6 +69,7 @@ type value = Int of int
              | Empty
              | List of value list
              | Pair of value * value
+             | Null
 
 type 'a env = (string * 'a) list
 let empty = []
@@ -259,7 +262,6 @@ let isList e = match e with
 let rec desugar exprS = match exprS with
   | IntS i              -> IntC i
   | NumS i              -> NumC i
-  | EmptyS              -> EmptyC 
   | ComplexFrS i        -> ComplexFrC i
   | ComplexFnS i        -> ComplexFnC i
   | ComplexNfS i        -> ComplexNfC i
@@ -268,6 +270,8 @@ let rec desugar exprS = match exprS with
   | NinfS               -> NinfC 
   | NanS                -> NanC 
   | BoolS i             -> BoolC i
+  | EmptyS              -> EmptyC
+  | NullS               -> NullC
   | FracS (v1, v2)      -> FracC (v1, v2)
   | IfS (cond, th, els) -> IfC (desugar cond, desugar th, desugar els)
   | NotS e              -> desugar (IfS (e, BoolS false, BoolS true))
@@ -293,11 +297,12 @@ let rec interp env r = match r with
   | ComplexFnC i        -> simplify_complex (ComplexFn i)
   | ComplexNfC i        -> simplify_complex (ComplexNf i)
   | ComplexNC i         -> simplify_complex (ComplexN i)
-  | EmptyC              -> Empty
+  | NullC               -> Null
   | PinfC               -> Pinf
   | NinfC               -> Ninf 
   | NanC                -> Nan 
   | BoolC i             -> Bool i
+  | EmptyC              -> Empty
   | FracC (v1, v2)      -> simplify_frac (Frac (v1, v2))
   | IfC (i1, i2, i3)    -> ( match (interp env i1) with
                              | Bool i1' -> if (i1') then interp env i2 
@@ -340,8 +345,9 @@ let rec valToString r = match r with
   | Pinf                    -> "+inf.0"
   | Ninf                    -> "-inf.0"
   | Nan                     -> "+nan.0"
-  | Bool i                  -> string_of_bool i
   | Empty                   -> ""
+  | Bool i                  -> string_of_bool i
+  | Null                    -> "'()"
   | List i                  -> let rec listToString lst = match lst with
                                                           | [] -> ""
                                                           | e :: [] -> (valToString e)

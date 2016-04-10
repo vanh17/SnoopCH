@@ -12,6 +12,7 @@ type exprS = IntS of int
              | NinfS
              | NanS
              | BoolS of bool
+             | EmptyS
              | IfS of exprS * exprS * exprS
              | OrS of exprS * exprS
              | AndS of exprS * exprS
@@ -21,11 +22,11 @@ type exprS = IntS of int
              | EqS of exprS * exprS
              | NeqS of exprS * exprS
              | CondS of (exprS * exprS) list
-             | EmptyS
              | ListS of exprS list
              | PairS of exprS * exprS
              | CarS of exprS
              | CdrS of exprS
+             | NullS
 type exprC = IntC of int
              | FracC of (int * int)
              | NumC of float
@@ -37,16 +38,17 @@ type exprC = IntC of int
              | NinfC
              | NanC 
              | BoolC of bool
+             | EmptyC
              | IfC of exprC * exprC * exprC
              | ArithC of string * exprC * exprC
              | CompC of string * exprC * exprC
              | EqC of exprC * exprC
              | CondC of (exprC * exprC) list
-             | EmptyC
              | ListC of exprC list
              | PairC of exprC * exprC
              | CarC of exprC
              | CdrC of exprC
+             | NullC
 type value = Int of int
              | Frac of (int * int)
              | Num of float
@@ -61,6 +63,7 @@ type value = Int of int
              | Empty
              | List of value list
              | Pair of value * value
+             | Null
 
 
 (* Environment lookup *)
