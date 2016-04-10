@@ -310,3 +310,20 @@ let t16b = evaluate (desugar (PairS (IntS 3, PairS (IntS 4, PairS (IntS 4, ListS
 
 let t16c = evaluate (desugar (PairS (IntS 3, PairS (IntS 4, PairS (IntS 4, ListS [PairS (IntS 3, BoolS true)]))))) = List [Int 3; Int 4; Int 4; Pair (Int 3, Bool true)]
 
+
+let t17a = evaluate (desugar (CarS (ListS [IntS 3; ComplexFrS (1, 3, 4, 6); ArithS ("*", ComplexNfS (2.4, 1, 40), NumS 3.4)]))) = Int 3
+
+let t17b = evaluate (desugar (CdrS (ListS [IntS 3; ComplexFrS (1, 3, 4, 6); ArithS ("*", ComplexNfS (2.4, 1, 40), NumS 3.4)])))
+         = List [ComplexFr (1, 3, 2, 3); ComplexN (8.16, 0.085)]
+
+let t17c = try (evaluate (desugar (CarS (ListS []))); false) with Interp "car: expected pair? or list?" -> true
+                                                             | _ -> false
+
+let t171c = try (evaluate (desugar (CdrS (ListS []))); false) with Interp "cdr: expected pair? or list?" -> true
+                                                             | _ -> false
+
+let t17d = evaluate (desugar (CarS (PairS (IntS 3, PairS (IntS 4, PairS (IntS 4, BoolS true)))))) = Int 3
+
+let t17e = evaluate (desugar (CdrS (PairS (IntS 3, PairS (IntS 4, PairS (IntS 4, BoolS true)))))) = Pair (Int 4, Pair (Int 4, Bool true))
+
+
