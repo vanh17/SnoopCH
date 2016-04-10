@@ -12,6 +12,8 @@
 %token PINF
 %token NINF
 %token NAN
+%token OSB
+%token CSB
 %token COND
 %token TRUE FALSE
 %token IF THEN ELSE
@@ -53,6 +55,7 @@ expr:
   | NAN                          { NanS }
   | TRUE                         { BoolS true }
   | FALSE                        { BoolS false }
+  | COND  OSB expr expr CSB      { CondS [($3, $4)] }              
   | IF expr THEN expr ELSE expr  { IfS ($2, $4, $6) }
   | OR expr expr                 { OrS ($2, $3) }
   | AND expr expr                { AndS ($2, $3) }

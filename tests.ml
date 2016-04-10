@@ -295,3 +295,5 @@ let t14d = evaluate (desugar (CondS [(BoolS false, IntS 3); (IfS (EqS (IntS 4, A
 let t14e = evaluate (desugar (CondS [(BoolS false, IntS 3); (IfS (EqS (IntS 4, ArithS ("-", IntS 5, IntS 1)), BoolS true, BoolS false), ArithS ("-", ComplexFrS (10, 5, 4, 1), ComplexFrS (10, 5, 4, 1 )))]))  
          = Int 0
 
+let t14f = evaluate (desugar (CondS [(IntS 1, IntS 3); (BoolS true, IntS 4)])) = Int 3
+

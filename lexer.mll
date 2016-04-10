@@ -43,6 +43,9 @@ rule token = parse
   | (int+ as x1) (['+' '-'] as x2) "i" { COMF (int_of_float (float_of_string x1), 1, int_of_string (if x2 = '+' then "1" else "-1"), 1) }
   | (float+ as x1) (['+' '-'] as x2) "i" { COMNF (float_of_string x1, int_of_string (if x2 = '+' then "1" else "-1"), 1) }
   | (sign? (digit+) as x1) '/' ((digit+) as x2 ) (['+' '-'] as x3) "i" { COMF (int_of_float (float_of_string x1), int_of_string x2, int_of_string (if x3 = '+' then "1" else "-1"), 1) }
+  | "cond"      { COND }
+  | "["         { OSB }
+  | "]"         { CSB }
   | "+inf.0"    { PINF }
   | "-inf.0"    { NINF }
   | "+nan.0"    { NAN }
@@ -55,8 +58,8 @@ rule token = parse
   | "+"         { PLUS }
   | "-"         { MINUS }
   | "*"         { TIMES }
-  | "/"        { DIVIDE }
-  | "=="        { EQ }
+  | "/"         { DIVIDE }
+  | "="         { EQ }
   | "!="        { NEQ }
   | comp as s   { COMPOP s}
   | eof         { raise Eof }
