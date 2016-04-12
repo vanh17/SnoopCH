@@ -28,6 +28,7 @@ type exprS = IntS of int
              | CarS of exprS
              | CdrS of exprS
              | NullS
+             | FunS of (exprS -> exprS)
 
 (* You will need to add more cases here. *)
 type exprC = IntC of int
@@ -52,6 +53,7 @@ type exprC = IntC of int
              | CarC of exprC
              | CdrC of exprC
              | NullC
+             | FunC of (exprC -> exprC)
 
 
 (* You will need to add more cases here. *)
@@ -286,6 +288,8 @@ let rec desugar exprS = match exprS with
   | PairS (x, y)        -> PairC (desugar x, desugar y)
   | CarS i              -> CarC (desugar i)
   | CdrS i              -> CdrC (desugar i)
+  | FunS (arg -> r)     -> let (a, r) = (desugar arg, desugar r)
+                           in FunC (a->r)
 
 
 (* You will need to add cases here. *)
@@ -326,6 +330,8 @@ let rec interp env r = match r with
                              | Pair (v1, v2) -> v2
                              | List (v1 :: rest) -> List rest
                              | _ -> raise (Interp "cdr: expected pair? or list?") )
+  | FunC (arg -> r)     -> let (a, r) = (interp env arg, interp env r)
+                           in FunC (a->r)
 
 
 (* evaluate : exprC -> val *)
@@ -354,4 +360,4 @@ let rec valToString r = match r with
                                                           | e1 :: e2 :: rest -> (valToString e1) ^ " " ^ (listToString (e2 :: rest))
                                in "'(" ^ (listToString i) ^ ")"
   | Pair (x, y)             -> "'(" ^ (valToString x) ^ " . " ^ (valToString y) ^ ")"
-
+  | Fun i                   -> "#<procedure>"

@@ -27,6 +27,7 @@ type exprS = IntS of int
              | CarS of exprS
              | CdrS of exprS
              | NullS
+             | FunS of (exprS -> exprS)
 type exprC = IntC of int
              | FracC of (int * int)
              | NumC of float
@@ -49,6 +50,7 @@ type exprC = IntC of int
              | CarC of exprC
              | CdrC of exprC
              | NullC
+             | FunC of (exprC -> exprC)
 type value = Int of int
              | Frac of (int * int)
              | Num of float
