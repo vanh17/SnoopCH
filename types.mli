@@ -1,6 +1,8 @@
 exception Desugar of string      (* Use for desugarer errors *)
 exception Interp of string       (* Use for interpreter errors *)
 
+type 'a env
+
 type exprS = IntS of int
              | FracS of (int * int)
              | NumS of float
@@ -27,7 +29,10 @@ type exprS = IntS of int
              | CarS of exprS
              | CdrS of exprS
              | NullS
-             | FunS of (exprS -> exprS)
+             | VarS of string
+             | LetS of exprS * exprS * exprS
+             | FunS of ((exprS list) * exprS)
+             | CallS of exprS * exprS
 type exprC = IntC of int
              | FracC of (int * int)
              | NumC of float
@@ -50,7 +55,10 @@ type exprC = IntC of int
              | CarC of exprC
              | CdrC of exprC
              | NullC
-             | FunC of (exprC -> exprC)
+             | VarC of string
+             | LetC of exprC * exprC * exprC
+             | FunC of ((exprC list) * exprC)
+             | CallC of exprC * exprC
 type value = Int of int
              | Frac of (int * int)
              | Num of float
@@ -66,10 +74,10 @@ type value = Int of int
              | List of value list
              | Pair of value * value
              | Null
+             | FunClos of (exprC * (value env))
 
 
 (* Environment lookup *)
-type 'a env
 val empty : 'a env
 val lookup : string -> 'a env -> 'a option
 val bind :  string -> 'a -> 'a env -> 'a env

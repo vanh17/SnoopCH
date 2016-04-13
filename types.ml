@@ -2,6 +2,8 @@ exception Desugar of string      (* Use for desugarer errors *)
 exception Interp of string       (* Use for interpreter errors *)
 
 (* You will need to add more cases here. *)
+type 'a env = (string * 'a) list
+
 type exprS = IntS of int
              | FracS of (int * int)
              | NumS of float
@@ -28,7 +30,10 @@ type exprS = IntS of int
              | CarS of exprS
              | CdrS of exprS
              | NullS
-             | FunS of (exprS -> exprS)
+             | VarS of string
+             | LetS of exprS * exprS * exprS
+             | FunS of ((exprS list) * exprS)
+             | CallS of exprS * exprS
 
 (* You will need to add more cases here. *)
 type exprC = IntC of int
@@ -53,7 +58,10 @@ type exprC = IntC of int
              | CarC of exprC
              | CdrC of exprC
              | NullC
-             | FunC of (exprC -> exprC)
+             | VarC of string
+             | LetC of exprC * exprC * exprC
+             | FunC of ((exprC list) * exprC)
+             | CallC of exprC * exprC
 
 
 (* You will need to add more cases here. *)
@@ -72,8 +80,8 @@ type value = Int of int
              | List of value list
              | Pair of value * value
              | Null
+             | FunClos of (exprC * (value env))
 
-type 'a env = (string * 'a) list
 let empty = []
 
 (* lookup : string -> 'a env -> 'a option *)
@@ -288,8 +296,9 @@ let rec desugar exprS = match exprS with
   | PairS (x, y)        -> PairC (desugar x, desugar y)
   | CarS i              -> CarC (desugar i)
   | CdrS i              -> CdrC (desugar i)
-  | FunS (arg -> r)     -> let (a, r) = (desugar arg, desugar r)
-                           in FunC (a->r)
+  | VarS i              -> VarC i
+  | LetS (i, e1, e2)    -> LetC (desugar i, desugar e1, desugar e2)
+  | FunS (arg, b)       -> FunC (List.map (fun x -> desugar x) arg, desugar b)
 
 
 (* You will need to add cases here. *)
@@ -330,8 +339,13 @@ let rec interp env r = match r with
                              | Pair (v1, v2) -> v2
                              | List (v1 :: rest) -> List rest
                              | _ -> raise (Interp "cdr: expected pair? or list?") )
-  | FunC (arg -> r)     -> let (a, r) = (interp env arg, interp env r)
-                           in FunC (a->r)
+  | VarC i              -> ( match (lookup i env) with
+                             | Some v -> v
+                             | None   -> raise (Interp "interpErr: undefined variable") )
+  | LetC (i, e1, e2)    -> ( match i with
+                             | VarC v -> interp (bind v (interp env e1) env) e2
+                             | _      -> raise (Interp "letErr: require a variable") )
+  | FunC (arg, b)       ->  FunClos (r, env)
 
 
 (* evaluate : exprC -> val *)
@@ -360,4 +374,4 @@ let rec valToString r = match r with
                                                           | e1 :: e2 :: rest -> (valToString e1) ^ " " ^ (listToString (e2 :: rest))
                                in "'(" ^ (listToString i) ^ ")"
   | Pair (x, y)             -> "'(" ^ (valToString x) ^ " . " ^ (valToString y) ^ ")"
-  | Fun i                   -> "#<procedure>"
+  | FunClos _               -> "#<procedure>"

@@ -18,9 +18,10 @@ let fract = sign? (digit+) '/' (digit+)
 let pinf = "+inf.0"
 let ninf = "-inf.0"
 let nan = "+nan.0"
-let true = "true" | "#t"
-let false = "false" | "#f"
-let comp = ">" | ">=" | "<" | "<="
+let true = ("true" | "#t")
+let false = ("false" | "#f")
+let comp = (">" | ">=" | "<" | "<=")
+let var = "_" ['A'-'z']+
 
 rule token = parse
   | white       { token lexbuf }
@@ -44,6 +45,7 @@ rule token = parse
   | (float+ as x1) (['+' '-'] as x2) "i" { COMNF (float_of_string x1, int_of_string (if x2 = '+' then "1" else "-1"), 1) }
   | (sign? (digit+) as x1) '/' ((digit+) as x2 ) (['+' '-'] as x3) "i" { COMF (int_of_float (float_of_string x1), int_of_string x2, int_of_string (if x3 = '+' then "1" else "-1"), 1) }
   | "cond"      { COND }
+  | "lambda"    { FUN }
   | "list"      { LIST }
   | "'"         { SQUOTE }
   | "car"       { CAR }
@@ -69,6 +71,8 @@ rule token = parse
   | "/"         { DIVIDE }
   | "="         { EQ }
   | "!="        { NEQ }
+  | "let"       { LET }
+  | var as s    { VAR s }
   | comp as s   { COMPOP s}
   | eof         { raise Eof }
   | any         { raise Unrecognized }

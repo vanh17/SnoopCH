@@ -17,8 +17,11 @@
 %token OSB
 %token CSB
 %token COND
+%token FUN
 %token NULL
 %token LIST
+%token <string> VAR
+%token LET
 %token SQUOTE
 %token CAR
 %token CDR
@@ -50,6 +53,10 @@ headEx:
   | expr                         { $1 }
 ;
 
+listVar:
+  | CPAREN                       { [] }
+  | VAR listVar                  { (VarS $1) :: $2 }
+
 listExpr:
   | CPAREN                       { [] }
   | expr listExpr                { $1 :: $2 }
@@ -63,6 +70,7 @@ listPairExpr:
 pairExpr:
   | OSB expr expr CSB            { ($2, $3) }
 ;
+
 
 expr:
   | FLOAT                            { NumS $1 }
@@ -95,5 +103,8 @@ expr:
   | OPAREN CONS expr expr CPAREN     { PairS ($3, $4) }
   | OPAREN CAR expr CPAREN           { CarS $3 }
   | OPAREN CDR expr CPAREN           { CdrS $3 }
+  | VAR                              { VarS $1 }
+  | OPAREN LET OPAREN OSB VAR expr CSB CPAREN expr CPAREN   { LetS ((VarS $5), $6, $9) }
+  | OPAREN FUN OPAREN listVar expr CPAREN                   { FunS ($4, $5) } 
 ;
 
