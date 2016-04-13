@@ -33,7 +33,8 @@ type exprS = IntS of int
              | VarS of string
              | LetS of exprS * exprS * exprS
              | FunS of ((exprS list) * exprS)
-             | CallS of exprS * exprS
+             | DefineS of exprS * exprS
+             | CallS of (exprS * (exprS list))
 
 (* You will need to add more cases here. *)
 type exprC = IntC of int
@@ -61,7 +62,8 @@ type exprC = IntC of int
              | VarC of string
              | LetC of exprC * exprC * exprC
              | FunC of ((exprC list) * exprC)
-             | CallC of exprC * exprC
+             | DefineC of exprC * exprC
+             | CallC of (exprC * (exprC list))
 
 
 (* You will need to add more cases here. *)
@@ -265,6 +267,14 @@ let isList e = match e with
                | List i -> true
                | _ -> false 
 
+let rec bindList lstVar lstVal env = match (lstVar, lstVal) with
+                                     | ([], []) -> env
+                                     | ((VarC var1) :: varest, val1 :: vlrest) -> let e = bind var1 val1 env 
+                                                                           in bindList varest vlrest e
+                                     | _ -> raise (Interp "callErr: arguments and inputs do not match")
+
+let bindReturnValue str v env = match (bind str v env) with
+                                | _ -> Empty
 (* INTERPRETER *)
 
 (* You will need to add cases here. *)
@@ -299,6 +309,8 @@ let rec desugar exprS = match exprS with
   | VarS i              -> VarC i
   | LetS (i, e1, e2)    -> LetC (desugar i, desugar e1, desugar e2)
   | FunS (arg, b)       -> FunC (List.map (fun x -> desugar x) arg, desugar b)
+  | DefineS (var, value)-> DefineC (desugar var, desugar value)
+  | CallS (f, i)        -> CallC (desugar f, List.map (fun x -> desugar x) i)
 
 
 (* You will need to add cases here. *)
@@ -345,7 +357,13 @@ let rec interp env r = match r with
   | LetC (i, e1, e2)    -> ( match i with
                              | VarC v -> interp (bind v (interp env e1) env) e2
                              | _      -> raise (Interp "letErr: require a variable") )
-  | FunC (arg, b)       ->  FunClos (r, env)
+  | FunC (arg, b)       -> FunClos (r, env)
+  | DefineC (var, value)-> ( match var with
+                             | VarC v -> bindReturnValue v (interp env value) env
+                             | _ -> raise (Interp "defineErr: define on non-variable") ) 
+  | CallC (f, i)        -> ( match (interp env f, List.map (fun x -> interp env x) i) with
+                             | (FunClos (FunC (arg, b), nenv), ilst) -> interp (bindList arg ilst env) b
+                             | _ -> raise (Interp "callErr: call on a non-closure") )
 
 
 (* evaluate : exprC -> val *)

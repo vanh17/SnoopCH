@@ -26,6 +26,8 @@
 %token CAR
 %token CDR
 %token CONS
+%token MAP
+%token DEFINE
 %token TRUE FALSE
 %token IF THEN ELSE
 %token OR AND NOT
@@ -106,5 +108,7 @@ expr:
   | VAR                              { VarS $1 }
   | OPAREN LET OPAREN OSB VAR expr CSB CPAREN expr CPAREN   { LetS ((VarS $5), $6, $9) }
   | OPAREN FUN OPAREN listVar expr CPAREN                   { FunS ($4, $5) } 
+  | OPAREN OPAREN FUN OPAREN listVar expr CPAREN listExpr   { CallS (FunS ($5, $6), $8) }
+  | OPAREN DEFINE  expr expr CPAREN                         { DefineS ($3, $4) }
 ;
 

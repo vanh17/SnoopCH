@@ -32,7 +32,8 @@ type exprS = IntS of int
              | VarS of string
              | LetS of exprS * exprS * exprS
              | FunS of ((exprS list) * exprS)
-             | CallS of exprS * exprS
+             | DefineS of exprS * exprS
+             | CallS of (exprS * (exprS list))
 type exprC = IntC of int
              | FracC of (int * int)
              | NumC of float
@@ -58,7 +59,8 @@ type exprC = IntC of int
              | VarC of string
              | LetC of exprC * exprC * exprC
              | FunC of ((exprC list) * exprC)
-             | CallC of exprC * exprC
+             | DefineC of exprC * exprC
+             | CallC of (exprC * (exprC list))
 type value = Int of int
              | Frac of (int * int)
              | Num of float
@@ -81,6 +83,7 @@ type value = Int of int
 val empty : 'a env
 val lookup : string -> 'a env -> 'a option
 val bind :  string -> 'a -> 'a env -> 'a env
+val bindList : exprC list -> 'a list -> 'a env -> 'a env
 
 (* Interpreter steps *)
 val desugar : exprS -> exprC
@@ -105,3 +108,4 @@ val eqEval : value -> value -> value
 val condEval : (exprC * exprC) list -> exprC
 val isPair : value -> bool
 val isList : value -> bool
+val bindReturnValue : string -> 'a -> 'a env -> value
