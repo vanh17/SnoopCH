@@ -90,12 +90,11 @@ let enref = ref empty
 
 (* lookup : string -> 'a env -> 'a option *)
 let rec lookup str env = match env with
-  | []          -> None
-  | (s,v) :: tl -> if s = str then ( match v with
-                                     | ref Some i -> Some i
-                                     | ref None   -> None
-                                     | _          -> Some v )
-                    else lookup str tl
+                         | []          -> None
+                         | (s,v) :: tl -> (if s = str then ( match v with
+                                                            | ref _ -> !v
+                                                            | _     -> Some v )
+                                          else lookup str tl)
 (* val bind :  string -> 'a -> 'a env -> 'a env *)
 let bind str v env = (str, v) :: env
 
@@ -365,7 +364,10 @@ let rec interp env r = match r with
                              | _      -> raise (Interp "letErr: require a variable") )
   | FunC (arg, b)       -> FunClos (r, env)
   | DefineC (var, value)-> ( match var with
-                             | VarC v -> bindReturnValue v (interp env value) (!enref)
+                             | VarC v -> let r = ref None 
+                                         in ( match (bind v r (!enref)
+                                              | _ -> ( match ((lookup v (!enref)) := (Some (interp env value))) with
+                                                       | _ -> Empty ) )
                              | _ -> raise (Interp "defineErr: define on non-variable") ) 
   | CallC (f, i)        -> ( match (interp env f, List.map (fun x -> interp env x) i) with
                              | (FunClos (FunC (arg, b), nenv), ilst) -> interp (bindList arg ilst env) b
