@@ -77,6 +77,7 @@ type value = Int of int
              | Pair of value * value
              | Null
              | FunClos of (exprC * (value env))
+             | RefToOpV of (value option) ref
 
 
 (* Environment lookup *)
@@ -108,4 +109,4 @@ val eqEval : value -> value -> value
 val condEval : (exprC * exprC) list -> exprC
 val isPair : value -> bool
 val isList : value -> bool
-val bindReturnValue : string -> 'a -> 'a env -> value
+val bindReturnValue : string -> value -> (value env) -> value

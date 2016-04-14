@@ -83,13 +83,19 @@ type value = Int of int
              | Pair of value * value
              | Null
              | FunClos of (exprC * (value env))
+             | RefToOpV of (value option) ref
 
 let empty = []
+let enref = ref empty
 
 (* lookup : string -> 'a env -> 'a option *)
 let rec lookup str env = match env with
   | []          -> None
-  | (s,v) :: tl -> if s = str then Some v else lookup str tl
+  | (s,v) :: tl -> if s = str then ( match v with
+                                     | ref Some i -> Some i
+                                     | ref None   -> None
+                                     | _          -> Some v )
+                    else lookup str tl
 (* val bind :  string -> 'a -> 'a env -> 'a env *)
 let bind str v env = (str, v) :: env
 
@@ -273,7 +279,7 @@ let rec bindList lstVar lstVal env = match (lstVar, lstVal) with
                                                                            in bindList varest vlrest e
                                      | _ -> raise (Interp "callErr: arguments and inputs do not match")
 
-let bindReturnValue str v env = match (bind str v env) with
+let bindReturnValue str v env = match (enref:= (bind str v env)) with
                                 | _ -> Empty
 (* INTERPRETER *)
 
@@ -359,7 +365,7 @@ let rec interp env r = match r with
                              | _      -> raise (Interp "letErr: require a variable") )
   | FunC (arg, b)       -> FunClos (r, env)
   | DefineC (var, value)-> ( match var with
-                             | VarC v -> bindReturnValue v (interp env value) env
+                             | VarC v -> bindReturnValue v (interp env value) (!enref)
                              | _ -> raise (Interp "defineErr: define on non-variable") ) 
   | CallC (f, i)        -> ( match (interp env f, List.map (fun x -> interp env x) i) with
                              | (FunClos (FunC (arg, b), nenv), ilst) -> interp (bindList arg ilst env) b
@@ -367,7 +373,7 @@ let rec interp env r = match r with
 
 
 (* evaluate : exprC -> val *)
-let evaluate exprC = exprC |> interp []
+let evaluate exprC = exprC |> interp (!enref)
 
 
 
