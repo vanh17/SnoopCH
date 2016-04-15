@@ -31,6 +31,7 @@ type exprS = IntS of int
              | NullS
              | VarS of string
              | LetS of exprS * exprS * exprS
+             | LetsS of ((exprS * exprS) list) * exprS
              | FunS of ((exprS list) * exprS)
              | DefineS of exprS * exprS
              | CallS of (exprS * (exprS list))
@@ -58,6 +59,7 @@ type exprC = IntC of int
              | NullC
              | VarC of string
              | LetC of exprC * exprC * exprC
+             | LetsC of ((exprC * exprC) list) * exprC
              | FunC of ((exprC list) * exprC)
              | DefineC of exprC * exprC
              | CallC of (exprC * (exprC list))
@@ -109,5 +111,4 @@ val eqEval : value -> value -> value
 val condEval : (exprC * exprC) list -> exprC
 val isPair : value -> bool
 val isList : value -> bool
-val bindReturnValue : string -> value -> (value env) -> value
 val isNum : value -> bool
