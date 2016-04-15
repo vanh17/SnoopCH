@@ -82,7 +82,7 @@ type value = Int of int
 
 (* Environment lookup *)
 val empty : 'a env
-val lookup : string -> 'a env -> 'a option
+val lookup : 'a -> ('a * value) list -> value option (*string -> 'a env -> 'a option*)
 val bind :  string -> 'a -> 'a env -> 'a env
 val bindList : exprC list -> 'a list -> 'a env -> 'a env
 

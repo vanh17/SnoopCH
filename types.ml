@@ -91,8 +91,9 @@ let enref = ref empty
 (* lookup : string -> 'a env -> 'a option *)
 let rec lookup str env = match env with
                          | []          -> None
-                         | (s,v) :: tl -> (if s = str then ( try (!v; !v) with 
-                                                             | _ -> Some v)
+                         | (s,v) :: tl -> (if s = str then ( match v with
+                                                             | RefToOpV r -> !r
+                                                             | _          -> Some v) 
                                           else lookup str tl)
 (* val bind :  string -> 'a -> 'a env -> 'a env *)
 let bind str v env = (str, v) :: env
@@ -363,11 +364,12 @@ let rec interp env r = match r with
                              | _      -> raise (Interp "letErr: require a variable") )
   | FunC (arg, b)       -> FunClos (r, env)
   | DefineC (var, value)-> ( match var with
-                             | VarC v -> let r = ref None 
-                                         in let !enref = bind v r !enref
-                                            in let r2 = (lookup v !enref)
-                                               in  ( match (r2 := (Some (interp env value))) with
-                                                     | _ -> Empty ) 
+                             | VarC v -> let r = RefToOpV (ref None) 
+                                         in ( match (enref:= (bind v r (!enref))) with
+                                              | _ -> ( match  r with
+                                                       | RefToOpV r1 -> ( match (r1:=(Some (interp env value))) with
+                                                                          | _ -> Empty )
+                                                       | _ -> Empty ) )
                              | _ -> raise (Interp "defineErr: define on non-variable") ) 
   | CallC (f, i)        -> ( match (interp env f, List.map (fun x -> interp env x) i) with
                              | (FunClos (FunC (arg, b), nenv), ilst) -> interp (bindList arg ilst env) b
@@ -401,3 +403,4 @@ let rec valToString r = match r with
                                in "'(" ^ (listToString i) ^ ")"
   | Pair (x, y)             -> "'(" ^ (valToString x) ^ " . " ^ (valToString y) ^ ")"
   | FunClos _               -> "#<procedure>"
+  | _                       -> ""
