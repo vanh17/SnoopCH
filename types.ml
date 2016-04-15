@@ -252,11 +252,22 @@ let compEval op v1 v2 = match (op, v1, v2) with
                         | (_, Num x, Num y)     -> raise (Interp "interpErr: only <, <=, >, >=")
                         | _                     -> raise (Interp "interpErr: not a num")
 
+let isNum n = match n with
+              | Num _ -> true
+              | Frac _ -> true
+              | ComplexN _ -> true
+              | ComplexNf _ -> true
+              | ComplexFr _ -> true
+              | ComplexFn _ -> true
+              | Int _ -> true
+              | _ -> false
 
 let eqEval v1 v2 = match (v1, v2) with
-                   | (Num n1, Num n2) -> Bool (n1 = n2)
                    | (Bool b1, Bool b2) -> Bool (b1 = b2)
-                   | _ -> Bool false
+                   | _ -> if ((isNum v1) && (isNum v2)) then ( match (toComplexN v1, toComplexN v2) with
+                                                               | (ComplexN (x1, x2), ComplexN (y1, y2)) -> Bool (x1 = y1 && x2 = y2)
+                                                               | _ -> Bool false )
+                          else Bool false
 
 let rec condEval lst = match lst with
                        | [] -> EmptyC

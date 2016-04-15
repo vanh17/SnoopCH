@@ -110,3 +110,4 @@ val condEval : (exprC * exprC) list -> exprC
 val isPair : value -> bool
 val isList : value -> bool
 val bindReturnValue : string -> value -> (value env) -> value
+val isNum : value -> bool
