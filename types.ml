@@ -91,9 +91,8 @@ let enref = ref empty
 (* lookup : string -> 'a env -> 'a option *)
 let rec lookup str env = match env with
                          | []          -> None
-                         | (s,v) :: tl -> (if s = str then ( match v with
-                                                            | ref _ -> !v
-                                                            | _     -> Some v )
+                         | (s,v) :: tl -> (if s = str then ( try (!v; !v) with 
+                                                             | _ -> Some v)
                                           else lookup str tl)
 (* val bind :  string -> 'a -> 'a env -> 'a env *)
 let bind str v env = (str, v) :: env
