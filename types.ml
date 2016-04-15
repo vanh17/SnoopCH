@@ -364,9 +364,10 @@ let rec interp env r = match r with
   | FunC (arg, b)       -> FunClos (r, env)
   | DefineC (var, value)-> ( match var with
                              | VarC v -> let r = ref None 
-                                         in ( match (bind v r (!enref)
-                                              | _ -> ( match ((lookup v (!enref)) := (Some (interp env value))) with
-                                                       | _ -> Empty ) )
+                                         in let !enref = bind v r !enref
+                                            in let r2 = (lookup v !enref)
+                                               in  ( match (r2 := (Some (interp env value))) with
+                                                     | _ -> Empty ) 
                              | _ -> raise (Interp "defineErr: define on non-variable") ) 
   | CallC (f, i)        -> ( match (interp env f, List.map (fun x -> interp env x) i) with
                              | (FunClos (FunC (arg, b), nenv), ilst) -> interp (bindList arg ilst env) b
