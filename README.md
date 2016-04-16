@@ -35,7 +35,6 @@ Windows:
 ocamlyacc parser.mly
 ocamllex lexer.mll
 ocamlc -c types.mli parser.mli lexer.ml parser.ml types.ml driver.ml
-ocamlc -o snoopch.exe lexer.cmo parser.cmo types.cmo driver.cmo
 ./snoopch.exe
 
 You can use it interactively as above. Or you can write a "program" in any file, then run it as input to the interpreter by:

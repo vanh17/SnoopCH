@@ -1,2 +1,20 @@
-43;;
-if true then 2 else 3;;
+(let ([x 3] 
+      [y 3] 
+      [z 4]) 
+    (+ x (* y z)));;
+(let* ([x 3] 
+       [y (* 2 x)] 
+       [z (+ x y)]) 
+      z);;
+(let* ([x 3] 
+       [y (* 2 x)] 
+       [z (lambda (n m) (+ n m))]) 
+      (z x y));;
+
+(letrec ([iseven (lambda (n)
+                       (or (= n 0)
+                           (isodd (- n 1))))]
+         [isodd (lambda (n)
+                      (and (not (= n 0))
+                           (iseven (- n 1))))])
+    (isodd 11));;

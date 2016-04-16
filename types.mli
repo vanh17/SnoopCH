@@ -30,8 +30,9 @@ type exprS = IntS of int
              | CdrS of exprS
              | NullS
              | VarS of string
-             | LetS of exprS * exprS * exprS
+             | LetS of ((exprS * exprS) list) * exprS
              | LetsS of ((exprS * exprS) list) * exprS
+             | LetrS of ((exprS * exprS) list) * exprS
              | FunS of ((exprS list) * exprS)
              | DefineS of exprS * exprS
              | CallS of (exprS * (exprS list))
@@ -58,8 +59,9 @@ type exprC = IntC of int
              | CdrC of exprC
              | NullC
              | VarC of string
-             | LetC of exprC * exprC * exprC
+             | LetC of ((exprC * exprC) list) * exprC
              | LetsC of ((exprC * exprC) list) * exprC
+             | LetrC of ((exprC * exprC) list) * exprC
              | FunC of ((exprC list) * exprC)
              | DefineC of exprC * exprC
              | CallC of (exprC * (exprC list))

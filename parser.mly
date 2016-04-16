@@ -23,6 +23,7 @@
 %token <string> VAR
 %token LET
 %token LETS
+%token LETREC
 %token SQUOTE
 %token CAR
 %token CDR
@@ -67,6 +68,14 @@ listExpr:
   | expr listExpr                { $1 :: $2 }
 ;
 
+listVarValuePair:
+  | CPAREN                       { [] }
+  | varValuePair listVarValuePair { $1 :: $2 }
+;
+
+varValuePair:
+  | OSB VAR expr CSB             { (VarS $2, $3) }
+
 listPairExpr: 
   | CPAREN                       { [] }                
   | pairExpr listPairExpr        { $1 :: $2 }
@@ -109,10 +118,11 @@ expr:
   | OPAREN CAR expr CPAREN           { CarS $3 }
   | OPAREN CDR expr CPAREN           { CdrS $3 }
   | VAR                              { VarS $1 }
-  | OPAREN LET OPAREN OSB VAR expr CSB CPAREN expr CPAREN   { LetS ((VarS $5), $6, $9) }
+  | OPAREN LET OPAREN listVarValuePair expr CPAREN          { LetS ($4, $5) }
   | OPAREN FUN OPAREN listVar expr CPAREN                   { FunS ($4, $5) } 
   | OPAREN OPAREN FUN OPAREN listVar expr CPAREN listExpr   { CallS (FunS ($5, $6), $8) }
   | OPAREN VAR listExpr                                     { CallS (VarS $2, $3) }
-  | OPAREN LETS OPAREN listPairExpr expr CPAREN             { LetsS ($4, $5) }
+  | OPAREN LETS OPAREN listVarValuePair expr CPAREN         { LetsS ($4, $5) }
+  | OPAREN LETREC OPAREN listVarValuePair expr CPAREN       { LetrS ($4, $5) }
 ;
 

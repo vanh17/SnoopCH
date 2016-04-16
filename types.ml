@@ -31,8 +31,9 @@ type exprS = IntS of int
              | CdrS of exprS
              | NullS
              | VarS of string
-             | LetS of exprS * exprS * exprS
+             | LetS of ((exprS * exprS) list) * exprS
              | LetsS of ((exprS * exprS) list) * exprS
+             | LetrS of ((exprS * exprS) list) * exprS
              | FunS of ((exprS list) * exprS)
              | DefineS of exprS * exprS
              | CallS of (exprS * (exprS list))
@@ -61,8 +62,9 @@ type exprC = IntC of int
              | CdrC of exprC
              | NullC
              | VarC of string
-             | LetC of exprC * exprC * exprC
+             | LetC of ((exprC * exprC) list) * exprC
              | LetsC of ((exprC * exprC) list) * exprC
+             | LetrC of ((exprC * exprC) list) * exprC
              | FunC of ((exprC list) * exprC)
              | DefineC of exprC * exprC
              | CallC of (exprC * (exprC list))
@@ -324,8 +326,9 @@ let rec desugar exprS = match exprS with
   | CarS i              -> CarC (desugar i)
   | CdrS i              -> CdrC (desugar i)
   | VarS i              -> VarC i
-  | LetS (i, e1, e2)    -> LetC (desugar i, desugar e1, desugar e2)
+  | LetS (lstve, e2)    -> LetC (List.map (fun (v, e) -> (desugar v, desugar e)) lstve, desugar e2)
   | LetsS (lst, e2)     -> LetsC (List.map (fun (x, y) -> (desugar x, desugar y)) lst, desugar e2)
+  | LetrS (lst, e2)     -> LetrC (List.map (fun (x, y) -> (desugar x, desugar y)) lst, desugar e2)
   | FunS (arg, b)       -> FunC (List.map (fun x -> desugar x) arg, desugar b)
   | DefineS (var, value)-> DefineC (desugar var, desugar value)
   | CallS (f, i)        -> CallC (desugar f, List.map (fun x -> desugar x) i)
@@ -372,13 +375,24 @@ let rec interp env r = match r with
   | VarC i              -> ( match (lookup i env) with
                              | Some v -> v
                              | None   -> raise (Interp "interpErr: undefined variable") )
-  | LetC (i, e1, e2)    -> ( match i with
-                             | VarC v -> interp (bind v (interp env e1) env) e2
-                             | _      -> raise (Interp "letErr: require a variable") )
+  | LetC (lstve, e2)    -> let rec bindLet (lst, env1) = ( match lst with
+                                                           | []                  -> env1
+                                                           | (VarC v, e) :: rest -> bindLet (rest, bind v (interp env e) env1)
+                                                           | _ -> raise (Interp "letErr: need at least one binding") )
+                           in interp (bindLet (lstve, env)) e2
   | LetsC (lst, e2)     -> let rec bindListPair lst1 env1 = ( match lst1 with
-                                                            | [] -> env1
-                                                            | (VarC s, v) :: rest -> bindListPair rest (bind s (interp env1 v) env1) )
+                                                              | [] -> env1
+                                                              | (VarC s, v) :: rest -> bindListPair rest (bind s (interp env1 v) env1) 
+                                                              | _ -> raise (Interp "let*Err: need at least one binding") )
                            in interp (bindListPair lst env) e2
+  | LetrC (lst, e2)     -> let r = ref env
+                           in let lst1 = (List.map (fun (VarC v, e) -> ( let r2 = RefToOpV (ref None)
+                                                                         in ( match (r:= (bind v r2 (!r))) with
+                                                                              | _ -> (VarC v, r2, e) ) ) ) lst) 
+                              in ( match (List.map (fun (VarC v, re, e) -> ( match re with
+                                                                             | RefToOpV r3 -> (r3:= (Some (interp env e)))
+                                                                             | _ -> raise (Interp "letrErr") ) ) lst1) with
+                                   | _ -> interp (!r) e2 )
   | FunC (arg, b)       -> FunClos (r, env)
   | DefineC (var, value)-> ( match var with
                              | VarC v -> let r = RefToOpV (ref None) 

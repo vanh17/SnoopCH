@@ -73,6 +73,7 @@ rule token = parse
   | "!="        { NEQ }
   | "let"       { LET }
   | "let*"      { LETS }
+  | "letrec"    { LETREC }
   | "map"       { MAP }
   | "define"    { DEFINE }
   | var as s    { VAR s }
