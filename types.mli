@@ -15,7 +15,8 @@ type exprS = IntS of int
              | NanS
              | BoolS of bool
              | StringS of string
-             | CharS of string
+             | CharS of char
+             | CharNullS of string
              | EmptyS
              | IfS of exprS * exprS * exprS
              | OrS of exprS * exprS
@@ -38,6 +39,8 @@ type exprS = IntS of int
              | FunS of ((exprS list) * exprS)
              | IsStringS of exprS
              | IsCharS of exprS
+             | CharToIntS of exprS
+             | IntToCharS of exprS
              | DefineS of exprS * exprS
              | CallS of (exprS * (exprS list))
 type exprC = IntC of int
@@ -52,7 +55,8 @@ type exprC = IntC of int
              | NanC 
              | BoolC of bool
              | StringC of string
-             | CharC of string
+             | CharC of char
+             | CharNullC of string
              | EmptyC
              | IfC of exprC * exprC * exprC
              | ArithC of string * exprC * exprC
@@ -71,6 +75,8 @@ type exprC = IntC of int
              | FunC of ((exprC list) * exprC)
              | IsStringC of exprC
              | IsCharC of exprC
+             | CharToIntC of exprC
+             | IntToCharC of exprC
              | DefineC of exprC * exprC
              | CallC of (exprC * (exprC list))
 type value = Int of int
@@ -85,7 +91,8 @@ type value = Int of int
              | Nan 
              | Bool of bool
              | String of string
-             | Char of string
+             | Chara of char
+             | CharNull of string
              | Empty
              | List of value list
              | Pair of value * value

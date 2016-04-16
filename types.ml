@@ -16,7 +16,8 @@ type exprS = IntS of int
              | NanS  
              | BoolS of bool
              | StringS of string
-             | CharS of string
+             | CharS of char
+             | CharNullS of string
              | EmptyS
              | IfS of exprS * exprS * exprS
              | OrS of exprS * exprS
@@ -39,6 +40,8 @@ type exprS = IntS of int
              | FunS of ((exprS list) * exprS)
              | IsStringS of exprS
              | IsCharS of exprS
+             | CharToIntS of exprS
+             | IntToCharS of exprS
              | DefineS of exprS * exprS
              | CallS of (exprS * (exprS list))
 
@@ -55,7 +58,8 @@ type exprC = IntC of int
              | NanC 
              | BoolC of bool
              | StringC of string
-             | CharC of string
+             | CharC of char
+             | CharNullC of string
              | EmptyC
              | IfC of exprC * exprC * exprC
              | ArithC of string * exprC * exprC
@@ -74,6 +78,8 @@ type exprC = IntC of int
              | FunC of ((exprC list) * exprC)
              | IsStringC of exprC
              | IsCharC of exprC
+             | CharToIntC of exprC
+             | IntToCharC of exprC
              | DefineC of exprC * exprC
              | CallC of (exprC * (exprC list))
 
@@ -91,7 +97,8 @@ type value = Int of int
              | Nan 
              | Bool of bool
              | String of string
-             | Char of string
+             | Chara of char
+             | CharNull of string
              | Empty
              | List of value list
              | Pair of value * value
@@ -321,6 +328,7 @@ let rec desugar exprS = match exprS with
   | BoolS i             -> BoolC i
   | StringS i           -> StringC i
   | CharS i             -> CharC i
+  | CharNullS i         -> CharNullC i
   | EmptyS              -> EmptyC
   | NullS               -> NullC
   | FracS (v1, v2)      -> FracC (v1, v2)
@@ -344,6 +352,8 @@ let rec desugar exprS = match exprS with
   | FunS (arg, b)       -> FunC (List.map (fun x -> desugar x) arg, desugar b)
   | IsStringS i         -> IsStringC (desugar i)
   | IsCharS i           -> IsCharC (desugar i)
+  | CharToIntS i        -> CharToIntC (desugar i)
+  | IntToCharS i        -> IntToCharC (desugar i)
   | DefineS (var, value)-> DefineC (desugar var, desugar value)
   | CallS (f, i)        -> CallC (desugar f, List.map (fun x -> desugar x) i)
 
@@ -363,7 +373,8 @@ let rec interp env r = match r with
   | NanC                -> Nan 
   | BoolC i             -> Bool i
   | StringC i           -> String i 
-  | CharC i             -> Char i    
+  | CharC i             -> Chara i 
+  | CharNullC i         -> CharNull i   
   | EmptyC              -> Empty
   | FracC (v1, v2)      -> simplify_frac (Frac (v1, v2))
   | IfC (i1, i2, i3)    -> ( match (interp env i1) with
@@ -410,12 +421,21 @@ let rec interp env r = match r with
                                                                              | _ -> raise (Interp "letrErr") ) ) lst1) with
                                    | _ -> interp (!r) e2 )
   | FunC (arg, b)       -> FunClos (r, env)
-  | IsStringC i         -> ( match i with
-                             | StringC _ -> Bool true
+  | IsStringC i         -> ( match (interp env i) with
+                             | String _  -> Bool true
                              | _         -> Bool false )
-  | IsCharC i           -> ( match i with
-                             | CharC _ -> Bool true
-                             | _       -> Bool false )
+  | IsCharC i           -> ( match (interp env i) with
+                             | Chara _    -> Bool true
+                             | CharNull _ -> Bool true
+                             | _          -> Bool false )
+  | CharToIntC i        -> ( match (interp env i) with
+                             | Chara v -> Int (Char.code v)
+                             | CharNull _ -> Int 0
+                             | _       -> raise (Interp "char->integerErr: need an character") )
+  | IntToCharC i        -> ( match (interp env i) with
+                             | Int v -> if v = 0 then CharNull "nul"
+                                        else Chara (Char.chr v)
+                             | _     -> raise (Interp "integer->charErr: need a number") )
   | DefineC (var, value)-> ( match var with
                              | VarC v -> let r = RefToOpV (ref None) 
                                          in ( match (enref:= (bind v r (!enref))) with
@@ -451,7 +471,8 @@ let rec valToString r = match r with
   | Bool true               -> "#t"
   | Bool false              -> "#f"
   | String i                -> i
-  | Char i                  -> "#\\" ^ i
+  | Chara i                  -> "#\\" ^ (Char.escaped i)
+  | CharNull i              -> "#\\" ^ i
   | Null                    -> "'()"
   | List i                  -> let rec listToString lst = match lst with
                                                           | [] -> ""

@@ -22,7 +22,7 @@ let true = ("true" | "#t")
 let false = ("false" | "#f")
 let comp = (">" | ">=" | "<" | "<=")
 let var = (['A'-'Z'] | ['a' - 'z'] | digit | sign | '.' | '?' | '/' | comp | '\\' | '@' | '$' | '%' | '~' | ',' | '_')+
-let st  = (var | ' ' | '#' | ''' | '|' | '\"')
+let st  = (['A'-'Z'] | ['a' - 'z'] | digit | sign | '.' | '?' | '/' | '>' | '<' | '\\' | '@' | '$' | '%' | '~' | ',' | '_' | '#' | ''' | '|' | '\"')
 let stg = '"' st+ '"'
 let chr = '#' '\\' st+  
 
@@ -81,8 +81,11 @@ rule token = parse
   | "letrec"    { LETREC }
   | "map"       { MAP }
   | "define"    { DEFINE }
+  | "char->integer" { CHARTOINT }
+  | "integer->char" { INTTOCHAR }
   | var as s    { VAR s }
   | comp as s   { COMPOP s}
   | stg as s    { STRING s}
-  | '#' '\\' (st+ as s)    { CHAR s }
-  | eof                    { raise Eof }
+  | '#' '\\' (st as s)                { CHAR s }
+  | '#' '\\' ("null" | "nul" as s)    { CHARNULL s }
+  | eof                               { raise Eof }
