@@ -13,13 +13,8 @@ Build interpreter for small part of Racket:
 - begin, (set! ?), box, set-box!
 - symbols, strings
 - lambdas (variable number of arguments), function calls
+- String?
 
-extras:
-
-- macros?
-- garbage collection?
-- read input/ print output stream.
-- try/throw
 
 
 To compile:

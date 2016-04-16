@@ -1,15 +1,15 @@
 (let ([x 3] 
       [y 3] 
       [z 4]) 
-    (+ x (* y z)));;
+    (+ x (* y z)))                                    ;;result: 15
 (let* ([x 3] 
        [y (* 2 x)] 
        [z (+ x y)]) 
-      z);;
+      z)                                              ;;result: 9    
 (let* ([x 3] 
        [y (* 2 x)] 
        [z (lambda (n m) (+ n m))]) 
-      (z x y));;
+      (z x y))
 
 (letrec ([iseven (lambda (n)
                        (or (= n 0)
@@ -17,4 +17,17 @@
          [isodd (lambda (n)
                       (and (not (= n 0))
                            (iseven (- n 1))))])
-    (isodd 11));;
+    (isodd 11))                                       ;;result: true
+
+(letrec ([is-even? (lambda (n)
+                       (or (= n 0)
+                           (is-odd? (- n 1))))]
+           [is-odd? (lambda (n)
+                      (and (not (= n 0))
+                           (is-even? (- n 1))))])
+    (is-odd? 11))                                     ;;result: true
+
+(String? "abc +sdw$#|")                               ;; result: true
+(String? 3)                                           ;; result: true
+
+

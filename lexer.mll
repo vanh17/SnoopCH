@@ -23,7 +23,8 @@ let false = ("false" | "#f")
 let comp = (">" | ">=" | "<" | "<=")
 let var = (['A'-'Z'] | ['a' - 'z'] | digit | sign | '.' | '?' | '/' | comp | '\\' | '@' | '$' | '%' | '~' | ',' | '_')+
 let st  = (var | ' ' | '#' | ''' | '|' | '\"')
-let stg = '"' st+ '"' 
+let stg = '"' st+ '"'
+let chr = '#' '\\' st+  
 
 rule token = parse
   | white       { token lexbuf }
@@ -74,6 +75,7 @@ rule token = parse
   | "="         { EQ }
   | "!="        { NEQ }
   | "String?"   { ISSTRING }
+  | "Char?"     { ISCHAR}
   | "let"       { LET }
   | "let*"      { LETS }
   | "letrec"    { LETREC }
@@ -82,4 +84,5 @@ rule token = parse
   | var as s    { VAR s }
   | comp as s   { COMPOP s}
   | stg as s    { STRING s}
-  | eof         { raise Eof }
+  | '#' '\\' (st+ as s)    { CHAR s }
+  | eof                    { raise Eof }

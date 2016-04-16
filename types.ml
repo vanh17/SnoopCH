@@ -16,6 +16,7 @@ type exprS = IntS of int
              | NanS  
              | BoolS of bool
              | StringS of string
+             | CharS of string
              | EmptyS
              | IfS of exprS * exprS * exprS
              | OrS of exprS * exprS
@@ -37,6 +38,7 @@ type exprS = IntS of int
              | LetrS of ((exprS * exprS) list) * exprS
              | FunS of ((exprS list) * exprS)
              | IsStringS of exprS
+             | IsCharS of exprS
              | DefineS of exprS * exprS
              | CallS of (exprS * (exprS list))
 
@@ -53,6 +55,7 @@ type exprC = IntC of int
              | NanC 
              | BoolC of bool
              | StringC of string
+             | CharC of string
              | EmptyC
              | IfC of exprC * exprC * exprC
              | ArithC of string * exprC * exprC
@@ -70,6 +73,7 @@ type exprC = IntC of int
              | LetrC of ((exprC * exprC) list) * exprC
              | FunC of ((exprC list) * exprC)
              | IsStringC of exprC
+             | IsCharC of exprC
              | DefineC of exprC * exprC
              | CallC of (exprC * (exprC list))
 
@@ -87,6 +91,7 @@ type value = Int of int
              | Nan 
              | Bool of bool
              | String of string
+             | Char of string
              | Empty
              | List of value list
              | Pair of value * value
@@ -315,6 +320,7 @@ let rec desugar exprS = match exprS with
   | NanS                -> NanC 
   | BoolS i             -> BoolC i
   | StringS i           -> StringC i
+  | CharS i             -> CharC i
   | EmptyS              -> EmptyC
   | NullS               -> NullC
   | FracS (v1, v2)      -> FracC (v1, v2)
@@ -337,6 +343,7 @@ let rec desugar exprS = match exprS with
   | LetrS (lst, e2)     -> LetrC (List.map (fun (x, y) -> (desugar x, desugar y)) lst, desugar e2)
   | FunS (arg, b)       -> FunC (List.map (fun x -> desugar x) arg, desugar b)
   | IsStringS i         -> IsStringC (desugar i)
+  | IsCharS i           -> IsCharC (desugar i)
   | DefineS (var, value)-> DefineC (desugar var, desugar value)
   | CallS (f, i)        -> CallC (desugar f, List.map (fun x -> desugar x) i)
 
@@ -355,7 +362,8 @@ let rec interp env r = match r with
   | NinfC               -> Ninf 
   | NanC                -> Nan 
   | BoolC i             -> Bool i
-  | StringC i           -> String i     
+  | StringC i           -> String i 
+  | CharC i             -> Char i    
   | EmptyC              -> Empty
   | FracC (v1, v2)      -> simplify_frac (Frac (v1, v2))
   | IfC (i1, i2, i3)    -> ( match (interp env i1) with
@@ -405,6 +413,9 @@ let rec interp env r = match r with
   | IsStringC i         -> ( match i with
                              | StringC _ -> Bool true
                              | _         -> Bool false )
+  | IsCharC i           -> ( match i with
+                             | CharC _ -> Bool true
+                             | _       -> Bool false )
   | DefineC (var, value)-> ( match var with
                              | VarC v -> let r = RefToOpV (ref None) 
                                          in ( match (enref:= (bind v r (!enref))) with
@@ -437,8 +448,10 @@ let rec valToString r = match r with
   | Ninf                    -> "-inf.0"
   | Nan                     -> "+nan.0"
   | Empty                   -> ""
-  | Bool i                  -> string_of_bool i
+  | Bool true               -> "#t"
+  | Bool false              -> "#f"
   | String i                -> i
+  | Char i                  -> "#\\" ^ i
   | Null                    -> "'()"
   | List i                  -> let rec listToString lst = match lst with
                                                           | [] -> ""

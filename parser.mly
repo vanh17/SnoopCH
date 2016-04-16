@@ -10,6 +10,7 @@
 %token <float * float> COMN
 %token <string> COMPOP
 %token <string> STRING
+%token <string> CHAR
 %token PINF
 %token NINF
 %token NAN
@@ -23,6 +24,7 @@
 %token LIST
 %token <string> VAR
 %token ISSTRING
+%token ISCHAR
 %token LET
 %token LETS
 %token LETREC
@@ -102,6 +104,7 @@ expr:
   | TRUE                             { BoolS true }
   | FALSE                            { BoolS false }
   | STRING                           { StringS $1 }
+  | CHAR                             { CharS $1 }
   | OPAREN COND  listPairExpr        { CondS $3 }              
   | OPAREN IF expr expr expr CPAREN  { IfS ($3, $4, $5) }
   | OPAREN OR expr expr CPAREN       { OrS ($3, $4) }
@@ -128,5 +131,6 @@ expr:
   | OPAREN LETS OPAREN listVarValuePair expr CPAREN         { LetsS ($4, $5) }
   | OPAREN LETREC OPAREN listVarValuePair expr CPAREN       { LetrS ($4, $5) }
   | OPAREN ISSTRING expr CPAREN                             { IsStringS $3 }
+  | OPAREN ISCHAR expr CPAREN                               { IsCharS $3 }
 ;
 
