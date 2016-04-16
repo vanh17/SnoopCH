@@ -15,6 +15,7 @@ type exprS = IntS of int
              | NinfS
              | NanS  
              | BoolS of bool
+             | StringS of string
              | EmptyS
              | IfS of exprS * exprS * exprS
              | OrS of exprS * exprS
@@ -50,6 +51,7 @@ type exprC = IntC of int
              | NinfC
              | NanC 
              | BoolC of bool
+             | StringC of string
              | EmptyC
              | IfC of exprC * exprC * exprC
              | ArithC of string * exprC * exprC
@@ -82,6 +84,7 @@ type value = Int of int
              | Ninf 
              | Nan 
              | Bool of bool
+             | String of string
              | Empty
              | List of value list
              | Pair of value * value
@@ -309,6 +312,7 @@ let rec desugar exprS = match exprS with
   | NinfS               -> NinfC 
   | NanS                -> NanC 
   | BoolS i             -> BoolC i
+  | StringS i           -> StringC i
   | EmptyS              -> EmptyC
   | NullS               -> NullC
   | FracS (v1, v2)      -> FracC (v1, v2)
@@ -348,6 +352,7 @@ let rec interp env r = match r with
   | NinfC               -> Ninf 
   | NanC                -> Nan 
   | BoolC i             -> Bool i
+  | StringC i           -> String i     
   | EmptyC              -> Empty
   | FracC (v1, v2)      -> simplify_frac (Frac (v1, v2))
   | IfC (i1, i2, i3)    -> ( match (interp env i1) with
@@ -427,6 +432,7 @@ let rec valToString r = match r with
   | Nan                     -> "+nan.0"
   | Empty                   -> ""
   | Bool i                  -> string_of_bool i
+  | String i                -> i
   | Null                    -> "'()"
   | List i                  -> let rec listToString lst = match lst with
                                                           | [] -> ""

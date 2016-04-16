@@ -21,7 +21,9 @@ let nan = "+nan.0"
 let true = ("true" | "#t")
 let false = ("false" | "#f")
 let comp = (">" | ">=" | "<" | "<=")
-let var = (['A'-'Z'] | ['a' - 'z'])+
+let var = (['A'-'Z'] | ['a' - 'z'] | digit | sign | '.' | '?' | '/' | comp | '\\' | '@' | '$' | '%' | '~' | ',' | '_')+
+let st  = (var | ' ' | '#' | ''' | '|' | '\"')
+let stg = '"' st+ '"' 
 
 rule token = parse
   | white       { token lexbuf }
@@ -78,5 +80,5 @@ rule token = parse
   | "define"    { DEFINE }
   | var as s    { VAR s }
   | comp as s   { COMPOP s}
+  | stg as s    { STRING s}
   | eof         { raise Eof }
-  | any         { raise Unrecognized }

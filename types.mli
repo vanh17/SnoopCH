@@ -14,6 +14,7 @@ type exprS = IntS of int
              | NinfS
              | NanS
              | BoolS of bool
+             | StringS of string
              | EmptyS
              | IfS of exprS * exprS * exprS
              | OrS of exprS * exprS
@@ -47,6 +48,7 @@ type exprC = IntC of int
              | NinfC
              | NanC 
              | BoolC of bool
+             | StringC of string
              | EmptyC
              | IfC of exprC * exprC * exprC
              | ArithC of string * exprC * exprC
@@ -76,6 +78,7 @@ type value = Int of int
              | Ninf
              | Nan 
              | Bool of bool
+             | String of string
              | Empty
              | List of value list
              | Pair of value * value

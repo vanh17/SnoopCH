@@ -9,6 +9,7 @@
 %token <float * int * int> COMNF
 %token <float * float> COMN
 %token <string> COMPOP
+%token <string> STRING
 %token PINF
 %token NINF
 %token NAN
@@ -99,6 +100,7 @@ expr:
   | NAN                              { NanS }
   | TRUE                             { BoolS true }
   | FALSE                            { BoolS false }
+  | STRING                           { StringS $1 }
   | OPAREN COND  listPairExpr        { CondS $3 }              
   | OPAREN IF expr expr expr CPAREN  { IfS ($3, $4, $5) }
   | OPAREN OR expr expr CPAREN       { OrS ($3, $4) }
