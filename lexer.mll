@@ -73,6 +73,7 @@ rule token = parse
   | "/"         { DIVIDE }
   | "="         { EQ }
   | "!="        { NEQ }
+  | "String?"   { ISSTRING }
   | "let"       { LET }
   | "let*"      { LETS }
   | "letrec"    { LETREC }

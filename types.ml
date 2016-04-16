@@ -36,6 +36,7 @@ type exprS = IntS of int
              | LetsS of ((exprS * exprS) list) * exprS
              | LetrS of ((exprS * exprS) list) * exprS
              | FunS of ((exprS list) * exprS)
+             | IsStringS of exprS
              | DefineS of exprS * exprS
              | CallS of (exprS * (exprS list))
 
@@ -68,6 +69,7 @@ type exprC = IntC of int
              | LetsC of ((exprC * exprC) list) * exprC
              | LetrC of ((exprC * exprC) list) * exprC
              | FunC of ((exprC list) * exprC)
+             | IsStringC of exprC
              | DefineC of exprC * exprC
              | CallC of (exprC * (exprC list))
 
@@ -334,6 +336,7 @@ let rec desugar exprS = match exprS with
   | LetsS (lst, e2)     -> LetsC (List.map (fun (x, y) -> (desugar x, desugar y)) lst, desugar e2)
   | LetrS (lst, e2)     -> LetrC (List.map (fun (x, y) -> (desugar x, desugar y)) lst, desugar e2)
   | FunS (arg, b)       -> FunC (List.map (fun x -> desugar x) arg, desugar b)
+  | IsStringS i         -> IsStringC (desugar i)
   | DefineS (var, value)-> DefineC (desugar var, desugar value)
   | CallS (f, i)        -> CallC (desugar f, List.map (fun x -> desugar x) i)
 
@@ -399,6 +402,9 @@ let rec interp env r = match r with
                                                                              | _ -> raise (Interp "letrErr") ) ) lst1) with
                                    | _ -> interp (!r) e2 )
   | FunC (arg, b)       -> FunClos (r, env)
+  | IsStringC i         -> ( match i with
+                             | StringC _ -> Bool true
+                             | _         -> Bool false )
   | DefineC (var, value)-> ( match var with
                              | VarC v -> let r = RefToOpV (ref None) 
                                          in ( match (enref:= (bind v r (!enref))) with

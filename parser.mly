@@ -22,6 +22,7 @@
 %token NULL
 %token LIST
 %token <string> VAR
+%token ISSTRING
 %token LET
 %token LETS
 %token LETREC
@@ -126,5 +127,6 @@ expr:
   | OPAREN VAR listExpr                                     { CallS (VarS $2, $3) }
   | OPAREN LETS OPAREN listVarValuePair expr CPAREN         { LetsS ($4, $5) }
   | OPAREN LETREC OPAREN listVarValuePair expr CPAREN       { LetrS ($4, $5) }
+  | OPAREN ISSTRING expr CPAREN                             { IsStringS $3 }
 ;
 

@@ -35,6 +35,7 @@ type exprS = IntS of int
              | LetsS of ((exprS * exprS) list) * exprS
              | LetrS of ((exprS * exprS) list) * exprS
              | FunS of ((exprS list) * exprS)
+             | IsStringS of exprS
              | DefineS of exprS * exprS
              | CallS of (exprS * (exprS list))
 type exprC = IntC of int
@@ -65,6 +66,7 @@ type exprC = IntC of int
              | LetsC of ((exprC * exprC) list) * exprC
              | LetrC of ((exprC * exprC) list) * exprC
              | FunC of ((exprC list) * exprC)
+             | IsStringC of exprC
              | DefineC of exprC * exprC
              | CallC of (exprC * (exprC list))
 type value = Int of int
