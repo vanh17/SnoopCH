@@ -49,6 +49,7 @@ type exprS = IntS of int
              | FoldrS of (exprS * exprS * exprS)
              | FilterS of exprS * exprS
              | RemoveS of exprS * exprS
+             | EqualS of exprS * exprS
              | DefineS of exprS * exprS
              | CallS of (exprS * (exprS list))
 
@@ -94,6 +95,7 @@ type exprC = IntC of int
              | FoldrC of (exprC * exprC * exprC)
              | FilterC of exprC * exprC
              | RemoveC of exprC * exprC
+             | EqualC of exprC * exprC
              | DefineC of exprC * exprC
              | CallC of (exprC * (exprC list))
 
@@ -392,6 +394,7 @@ let rec desugar exprS = match exprS with
   | FoldlS (f, lst, init) -> FoldlC (desugar f, desugar lst, desugar init)
   | FilterS (c, lst)      -> FilterC (desugar c, desugar lst)
   | RemoveS (e, lst)      -> RemoveC (desugar e, desugar lst)
+  | EqualS (e1, e2)       -> EqualC (desugar e1, desugar e2)
   | DefineS (var, value)  -> DefineC (desugar var, desugar value)
   | CallS (f, i)          -> CallC (desugar f, List.map (fun x -> desugar x) i)
 
@@ -498,12 +501,12 @@ let rec interp env r = match r with
                                | _ -> raise (Interp "filterErr: not a list") )
   | RemoveC (e, lst)      -> let rec aux e1 lst1 acc = ( match lst1 with
                                                          | List [] -> []
-                                                         | List (e2 :: rest) -> ( match (isTheSame e2 e1) with
-                                                                                  | true -> (if acc > 0 then e2 :: (aux e1 (List rest) acc)
-                                                                                                 else (aux e1 (List rest) (acc + 1)))
-                                                                                  | _         -> e2 :: (aux e1 (List rest) acc) )
+                                                         | List (e2 :: rest) ->(if acc > 0 then e2 :: rest
+                                                                                else if (isTheSame e2 e1) then aux e1 (List rest) (acc+1)
+                                                                                     else e2 :: (aux e1 (List rest) acc))
                                                          | _ -> raise (Interp "removeErr: not a list") )
                             in List (aux (interp env e) (interp env lst) 0)
+  | EqualC (e1, e2)       -> Bool (isTheSame (interp env e1) (interp env e2))
   | DefineC (var, value)-> ( match var with
                              | VarC v -> let r1 = RefToOpV (ref None) 
                                          in ( match (enref:= (bind v r1 (!enref))) with

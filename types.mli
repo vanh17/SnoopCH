@@ -48,6 +48,7 @@ type exprS = IntS of int
              | FoldrS of (exprS * exprS * exprS)
              | FilterS of exprS * exprS
              | RemoveS of exprS * exprS
+             | EqualS of exprS * exprS
              | DefineS of exprS * exprS
              | CallS of (exprS * (exprS list))
 type exprC = IntC of int
@@ -91,6 +92,7 @@ type exprC = IntC of int
              | FoldrC of (exprC * exprC * exprC)
              | FilterC of exprC * exprC
              | RemoveC of exprC * exprC
+             | EqualC of exprC * exprC
              | DefineC of exprC * exprC
              | CallC of (exprC * (exprC list))
 type value = Int of int

@@ -12,6 +12,7 @@
 %token <string> STRING
 %token <char> CHAR
 %token <string> CHARNULL
+%token EQUAL
 %token PINF
 %token NINF
 %token NAN
@@ -156,5 +157,6 @@ expr:
   | OPAREN FOLDR expr expr expr CPAREN                      { FoldrS ($3, $4, $5) }
   | OPAREN FILTER expr expr CPAREN                          { FilterS ($3, $4) }
   | OPAREN REMOVE expr expr CPAREN                          { RemoveS ($3, $4) }
+  | OPAREN EQUAL expr expr CPAREN                           { EqualS ($3, $4) }
 ;
 

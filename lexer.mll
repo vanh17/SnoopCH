@@ -21,12 +21,13 @@ let nan = "+nan.0"
 let true = ("true" | "#t")
 let false = ("false" | "#f")
 let comp = (">" | ">=" | "<" | "<=")
-let var = (['A'-'Z'] | ['a' - 'z'] | digit | sign | '.' | '?' | '/' | '>' | '<' | '=' | '\\' | '@' | '$' | '%' | '~' | ',' | '_')+
-let st  = (['A'-'Z'] | ['a' - 'z'] | digit | sign | '.' | '?' | '/' | '>' | '<' | '\\' | '@' | '$' | '%' | '~' | ',' | '_' | '#' | ''' | '|' | '\"')
-let stg = '"' st+ '"'
+let var = (['A'-'Z'] | ['a' - 'z'] | digit | sign | '.' | '?' | '/' | '>' | '<' | '=' | '\\' | '@' | '$' | '%' | '~' | ',' | '_' | '*')+
+let st  = (['A'-'Z'] | ['a' - 'z'] | digit | sign | '.' | '?' | '/' | '>' | '<' | '\\' | '@' | '$' | '%' | '~' | ',' | '_' | '#' | ''' | '|' | '\"' | ':')
+let stg = '"' (st | ' ')+ '"'
 let chr = '#' '\\' st+  
 
 rule token = parse
+  | ";;" ((st | white | '~' | '&' | '*' | var | '"' | '[' | ']' | '(' | ')')+ as s) ";;"  { token lexbuf } 
   | white       { token lexbuf }
   | newline     { token lexbuf }
   | true        { TRUE }
@@ -87,11 +88,12 @@ rule token = parse
   | "filter"    { FILTER }
   | "remove"    { REMOVE }
   | "define"    { DEFINE }
+  | "equal?"    { EQUAL}
   | "char->integer" { CHARTOINT }
   | "integer->char" { INTTOCHAR }
   | comp as s   { COMPOP s}
   | var as s    { VAR s }
-  | stg as s    { STRING s}
+  | stg as s    { STRING s }
   | '#' '\\' (st as s)                { CHAR s }
   | '#' '\\' ("null" | "nul" as s)    { CHARNULL s }
   | eof                               { raise Eof }

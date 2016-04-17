@@ -493,12 +493,16 @@ Windows:
 ocamlyacc parser.mly
 ocamllex lexer.mll
 ocamlc -c types.mli parser.mli lexer.ml parser.ml types.ml driver.ml
+ocamlc -o snoopch.exe lexer.cmo parser.cmo types.cmo driver.cmo
 ./snoopch.exe
 
 You can use it interactively as above. Or you can write a "program" in any file, then run it as input to the interpreter by:
 
-./lang < sample_input.txt
+Linus:
+./snoopch < sample_input.txt
 
+Windows:
+snoopch.exe < sample_input.txt
 It is worth it to write some sample programs as you go by and load them that way, for quick testing of your lexer and parser.
 
 
