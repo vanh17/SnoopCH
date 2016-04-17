@@ -92,6 +92,8 @@ rule token = parse
   | "equal?"    { EQUAL}
   | "char->integer" { CHARTOINT }
   | "integer->char" { INTTOCHAR }
+  | "null?"     { ISNULL }
+  | "number?"   { ISNUM }
   | comp as s   { COMPOP s}
   | var as s    { VAR s }
   | stg as s    { STRING s }

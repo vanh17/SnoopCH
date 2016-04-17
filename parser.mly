@@ -22,6 +22,8 @@
 %token CSB
 %token COND
 %token FUN
+%token ISNULL
+%token ISNUM
 %token NULL
 %token LIST
 %token <string> VAR
@@ -160,5 +162,7 @@ expr:
   | OPAREN FILTER expr expr CPAREN                          { FilterS ($3, $4) }
   | OPAREN REMOVE expr expr CPAREN                          { RemoveS ($3, $4) }
   | OPAREN EQUAL expr expr CPAREN                           { EqualS ($3, $4) }
+  | OPAREN ISNULL expr CPAREN                               { IsNullS $3 }
+  | OPAREN ISNUM expr CPAREN                                { IsNumS $3 }
 ;
 

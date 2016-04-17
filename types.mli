@@ -49,6 +49,8 @@ type exprS = IntS of int
              | FilterS of exprS * exprS
              | RemoveS of exprS * exprS
              | EqualS of exprS * exprS
+             | IsNullS of exprS
+             | IsNumS of exprS
              | DefineS of exprS * exprS
              | CallS of (exprS * (exprS list))
 type exprC = IntC of int
@@ -93,6 +95,8 @@ type exprC = IntC of int
              | FilterC of exprC * exprC
              | RemoveC of exprC * exprC
              | EqualC of exprC * exprC
+             | IsNullC of exprC
+             | IsNumC of exprC
              | DefineC of exprC * exprC
              | CallC of (exprC * (exprC list))
 type value = Int of int

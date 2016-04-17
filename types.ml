@@ -50,6 +50,8 @@ type exprS = IntS of int
              | FilterS of exprS * exprS
              | RemoveS of exprS * exprS
              | EqualS of exprS * exprS
+             | IsNullS of exprS
+             | IsNumS of exprS
              | DefineS of exprS * exprS
              | CallS of (exprS * (exprS list))
 
@@ -96,6 +98,8 @@ type exprC = IntC of int
              | FilterC of exprC * exprC
              | RemoveC of exprC * exprC
              | EqualC of exprC * exprC
+             | IsNullC of exprC
+             | IsNumC of exprC
              | DefineC of exprC * exprC
              | CallC of (exprC * (exprC list))
 
@@ -395,6 +399,8 @@ let rec desugar exprS = match exprS with
   | FilterS (c, lst)      -> FilterC (desugar c, desugar lst)
   | RemoveS (e, lst)      -> RemoveC (desugar e, desugar lst)
   | EqualS (e1, e2)       -> EqualC (desugar e1, desugar e2)
+  | IsNullS e             -> IsNullC (desugar e)
+  | IsNumS e              -> IsNumC (desugar e)
   | DefineS (var, value)  -> DefineC (desugar var, desugar value)
   | CallS (f, i)          -> CallC (desugar f, List.map (fun x -> desugar x) i)
 
@@ -507,6 +513,11 @@ let rec interp env r = match r with
                                                          | _ -> raise (Interp "removeErr: not a list") )
                             in List (aux (interp env e) (interp env lst) 0)
   | EqualC (e1, e2)       -> Bool (isTheSame (interp env e1) (interp env e2))
+  | IsNullC e             -> ( match (interp env e) with
+                               | Null    -> Bool true
+                               | List [] -> Bool true
+                               | _       -> Bool false)
+  | IsNumC e              -> Bool (isNum (interp env e))
   | DefineC (var, value)-> ( match var with
                              | VarC v -> let r1 = RefToOpV (ref None) 
                                          in ( match (enref:= (bind v r1 (!enref))) with
