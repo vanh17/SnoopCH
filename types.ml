@@ -45,6 +45,8 @@ type exprS = IntS of int
              | MakeStringS of exprS * exprS
              | StringFromLstS of exprS list
              | MapS of exprS * exprS
+             | FoldlS of (exprS * exprS * exprS)
+             | FoldrS of (exprS * exprS * exprS)
              | DefineS of exprS * exprS
              | CallS of (exprS * (exprS list))
 
@@ -86,6 +88,8 @@ type exprC = IntC of int
              | MakeStringC of exprC * exprC
              | StringFromLstC of exprC list
              | MapC of exprC * exprC
+             | FoldlC of (exprC * exprC * exprC)
+             | FoldrC of (exprC * exprC * exprC)
              | DefineC of exprC * exprC
              | CallC of (exprC * (exprC list))
 
@@ -363,6 +367,8 @@ let rec desugar exprS = match exprS with
   | MakeStringS (k, c)  -> MakeStringC (desugar k, desugar c)
   | StringFromLstS clst -> StringFromLstC (List.map (fun x -> desugar x) clst)
   | MapS (f, lst)       -> MapC (desugar f, desugar lst)
+  | FoldrS (f, init, lst) -> FoldrC (desugar f, desugar init, desugar lst)
+  | FoldlS (f, lst, init) -> FoldlC (desugar f, desugar lst, desugar init)
   | DefineS (var, value)-> DefineC (desugar var, desugar value)
   | CallS (f, i)        -> CallC (desugar f, List.map (fun x -> desugar x) i)
 
@@ -455,6 +461,13 @@ let rec interp env r = match r with
   | MapC (f, lst)       -> ( match lst with
                              | ListC l -> List (List.map (fun x -> interp env (CallC (f, x::[]))) l)
                              | _      -> raise (Interp "mapErr: map on non-list") )
+  | FoldrC (f, init, lst) -> ( match lst with
+                               | ListC l -> interp env (FoldlC (f, init, ListC (List.rev l)))
+                               | _       -> raise (Interp "foldrErr: not a list") )
+  | FoldlC (f, init, lst) -> ( match lst with
+                               | ListC [] -> interp env init
+                               | ListC (e :: rest) -> interp env (FoldlC (f, CallC (f, e :: init :: []), ListC rest)) 
+                               | _ -> raise (Interp "foldlErr: not a list") )
   | DefineC (var, value)-> ( match var with
                              | VarC v -> let r1 = RefToOpV (ref None) 
                                          in ( match (enref:= (bind v r1 (!enref))) with

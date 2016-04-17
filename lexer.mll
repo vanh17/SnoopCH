@@ -82,6 +82,8 @@ rule token = parse
   | "let*"      { LETS }
   | "letrec"    { LETREC }
   | "map"       { MAP }
+  | "foldr"     { FOLDR }
+  | "foldl"     { FOLDL }
   | "define"    { DEFINE }
   | "char->integer" { CHARTOINT }
   | "integer->char" { INTTOCHAR }

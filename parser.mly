@@ -31,6 +31,8 @@
 %token CHARTOINT
 %token INTTOCHAR
 %token MAP
+%token FOLDR
+%token FOLDL
 %token LET
 %token LETS
 %token LETREC
@@ -148,5 +150,7 @@ expr:
   | OPAREN MAKESTRING INT CHAR CPAREN                       { MakeStringS (IntS $3, CharS $4) }
   | OPAREN STRINGFROMLST listChar                           { StringFromLstS $3 }
   | OPAREN MAP expr expr CPAREN                             { MapS ($3, $4) }
+  | OPAREN FOLDL expr expr expr CPAREN                      { FoldlS ($3, $4, $5) }
+  | OPAREN FOLDR expr expr expr CPAREN                      { FoldrS ($3, $4, $5) }
 ;
 

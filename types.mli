@@ -44,6 +44,8 @@ type exprS = IntS of int
              | MakeStringS of exprS * exprS
              | StringFromLstS of exprS list
              | MapS of exprS * exprS
+             | FoldlS of (exprS * exprS * exprS)
+             | FoldrS of (exprS * exprS * exprS)
              | DefineS of exprS * exprS
              | CallS of (exprS * (exprS list))
 type exprC = IntC of int
@@ -83,6 +85,8 @@ type exprC = IntC of int
              | MakeStringC of exprC * exprC
              | StringFromLstC of exprC list
              | MapC of exprC * exprC
+             | FoldlC of (exprC * exprC * exprC)
+             | FoldrC of (exprC * exprC * exprC)
              | DefineC of exprC * exprC
              | CallC of (exprC * (exprC list))
 type value = Int of int
