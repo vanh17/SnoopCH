@@ -26,6 +26,7 @@
 %token <string> VAR
 %token ISSTRING
 %token ISCHAR
+%token MAKESTRING
 %token CHARTOINT
 %token INTTOCHAR
 %token LET
@@ -138,5 +139,6 @@ expr:
   | OPAREN ISCHAR expr CPAREN                               { IsCharS $3 }
   | OPAREN CHARTOINT expr CPAREN                            { CharToIntS $3 }
   | OPAREN INTTOCHAR expr CPAREN                            { IntToCharS $3 }
+  | OPAREN MAKESTRING INT CHAR CPAREN                       { MakeStringS (IntS $3, CharS $4) }
 ;
 

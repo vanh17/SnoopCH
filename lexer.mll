@@ -75,7 +75,8 @@ rule token = parse
   | "="         { EQ }
   | "!="        { NEQ }
   | "String?"   { ISSTRING }
-  | "Char?"     { ISCHAR}
+  | "Char?"     { ISCHAR }
+  | "make-string" { MAKESTRING }
   | "let"       { LET }
   | "let*"      { LETS }
   | "letrec"    { LETREC }

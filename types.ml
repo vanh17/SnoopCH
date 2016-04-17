@@ -42,6 +42,7 @@ type exprS = IntS of int
              | IsCharS of exprS
              | CharToIntS of exprS
              | IntToCharS of exprS
+             | MakeStringS of exprS * exprS
              | DefineS of exprS * exprS
              | CallS of (exprS * (exprS list))
 
@@ -80,6 +81,7 @@ type exprC = IntC of int
              | IsCharC of exprC
              | CharToIntC of exprC
              | IntToCharC of exprC
+             | MakeStringC of exprC * exprC
              | DefineC of exprC * exprC
              | CallC of (exprC * (exprC list))
 
@@ -354,6 +356,7 @@ let rec desugar exprS = match exprS with
   | IsCharS i           -> IsCharC (desugar i)
   | CharToIntS i        -> CharToIntC (desugar i)
   | IntToCharS i        -> IntToCharC (desugar i)
+  | MakeStringS (k, c)  -> MakeStringC (desugar k, desugar c)
   | DefineS (var, value)-> DefineC (desugar var, desugar value)
   | CallS (f, i)        -> CallC (desugar f, List.map (fun x -> desugar x) i)
 
@@ -436,6 +439,10 @@ let rec interp env r = match r with
                              | Int v -> if v = 0 then CharNull "nul"
                                         else Chara (Char.chr v)
                              | _     -> raise (Interp "integer->charErr: need a number") )
+  | MakeStringC (k, c)  -> ( match (interp env k, interp env c) with
+                             | (Int i, Chara v) -> String (let rec aux n s = if n = 0 then "" else s ^ (aux (n - 1) s)
+                                                    in aux i (Char.escaped v))
+                             | _                -> raise (Interp "makeStringErr: need an integer and single character") )
   | DefineC (var, value)-> ( match var with
                              | VarC v -> let r = RefToOpV (ref None) 
                                          in ( match (enref:= (bind v r (!enref))) with
