@@ -43,6 +43,7 @@ type exprS = IntS of int
              | IntToCharS of exprS
              | MakeStringS of exprS * exprS
              | StringFromLstS of exprS list
+             | MapS of exprS * exprS
              | DefineS of exprS * exprS
              | CallS of (exprS * (exprS list))
 type exprC = IntC of int
@@ -81,6 +82,7 @@ type exprC = IntC of int
              | IntToCharC of exprC
              | MakeStringC of exprC * exprC
              | StringFromLstC of exprC list
+             | MapC of exprC * exprC
              | DefineC of exprC * exprC
              | CallC of (exprC * (exprC list))
 type value = Int of int

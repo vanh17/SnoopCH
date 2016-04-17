@@ -30,6 +30,7 @@
 %token STRINGFROMLST
 %token CHARTOINT
 %token INTTOCHAR
+%token MAP
 %token LET
 %token LETS
 %token LETREC
@@ -146,5 +147,6 @@ expr:
   | OPAREN INTTOCHAR expr CPAREN                            { IntToCharS $3 }
   | OPAREN MAKESTRING INT CHAR CPAREN                       { MakeStringS (IntS $3, CharS $4) }
   | OPAREN STRINGFROMLST listChar                           { StringFromLstS $3 }
+  | OPAREN MAP expr expr CPAREN                             { MapS ($3, $4) }
 ;
 

@@ -44,6 +44,7 @@ type exprS = IntS of int
              | IntToCharS of exprS
              | MakeStringS of exprS * exprS
              | StringFromLstS of exprS list
+             | MapS of exprS * exprS
              | DefineS of exprS * exprS
              | CallS of (exprS * (exprS list))
 
@@ -84,6 +85,7 @@ type exprC = IntC of int
              | IntToCharC of exprC
              | MakeStringC of exprC * exprC
              | StringFromLstC of exprC list
+             | MapC of exprC * exprC
              | DefineC of exprC * exprC
              | CallC of (exprC * (exprC list))
 
@@ -360,6 +362,7 @@ let rec desugar exprS = match exprS with
   | IntToCharS i        -> IntToCharC (desugar i)
   | MakeStringS (k, c)  -> MakeStringC (desugar k, desugar c)
   | StringFromLstS clst -> StringFromLstC (List.map (fun x -> desugar x) clst)
+  | MapS (f, lst)       -> MapC (desugar f, desugar lst)
   | DefineS (var, value)-> DefineC (desugar var, desugar value)
   | CallS (f, i)        -> CallC (desugar f, List.map (fun x -> desugar x) i)
 
@@ -418,14 +421,14 @@ let rec interp env r = match r with
                                                               | (VarC s, v) :: rest -> bindListPair rest (bind s (interp env1 v) env1) 
                                                               | _ -> raise (Interp "let*Err: need at least one binding") )
                            in interp (bindListPair lst env) e2
-  | LetrC (lst, e2)     -> let r = ref env
+  | LetrC (lst, e2)     -> let r1 = ref env
                            in let lst1 = (List.map (fun (VarC v, e) -> ( let r2 = RefToOpV (ref None)
-                                                                         in ( match (r:= (bind v r2 (!r))) with
+                                                                         in ( match (r1:= (bind v r2 (!r1))) with
                                                                               | _ -> (VarC v, r2, e) ) ) ) lst) 
                               in ( match (List.map (fun (VarC v, re, e) -> ( match re with
                                                                              | RefToOpV r3 -> (r3:= (Some (interp env e)))
                                                                              | _ -> raise (Interp "letrErr") ) ) lst1) with
-                                   | _ -> interp (!r) e2 )
+                                   | _ -> interp (!r1) e2 )
   | FunC (arg, b)       -> FunClos (r, env)
   | IsStringC i         -> ( match (interp env i) with
                              | String _  -> Bool true
@@ -449,13 +452,16 @@ let rec interp env r = match r with
   | StringFromLstC clst -> String (List.fold_right (fun x y -> ( match x with 
                                                                  | Chara c -> (Char.escaped c) ^ y
                                                                  | _ -> raise (Interp "stringErr: need a list of single charaters") ) ) (List.map (fun t -> interp env t) clst) "")
+  | MapC (f, lst)       -> ( match lst with
+                             | ListC l -> List (List.map (fun x -> interp env (CallC (f, x::[]))) l)
+                             | _      -> raise (Interp "mapErr: map on non-list") )
   | DefineC (var, value)-> ( match var with
-                             | VarC v -> let r = RefToOpV (ref None) 
-                                         in ( match (enref:= (bind v r (!enref))) with
-                                              | _ -> ( match  r with
-                                                       | RefToOpV r1 -> ( match (r1:=(Some (interp env value))) with
+                             | VarC v -> let r1 = RefToOpV (ref None) 
+                                         in ( match (enref:= (bind v r1 (!enref))) with
+                                              | _ -> ( match  r1 with
+                                                       | RefToOpV r2 -> ( match (r2:=(Some (interp env value))) with
                                                                           | _ -> Empty )
-                                                       | _ -> Empty ) )
+                                                       | _ -> raise (Interp "defineErr: not a value") ) ) 
                              | _ -> raise (Interp "defineErr: define on non-variable") ) 
   | CallC (f, i)        -> ( match (interp env f, List.map (fun x -> interp env x) i) with
                              | (FunClos (FunC (arg, b), nenv), ilst) -> interp (bindList arg ilst env) b
