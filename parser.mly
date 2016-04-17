@@ -33,6 +33,7 @@
 %token INTTOCHAR
 %token MAP
 %token FOLDR
+%token DOT
 %token FOLDL
 %token FILTER
 %token REMOVE
@@ -136,6 +137,7 @@ expr:
   | NULL                             { NullS }
   | OPAREN LIST listExpr             { ListS $3 }
   | SQUOTE OPAREN listExpr           { ListS $3 }
+  | SQUOTE OPAREN expr DOT expr CPAREN { PairS ($3, $5) }
   | OPAREN CONS expr expr CPAREN     { PairS ($3, $4) }
   | OPAREN CAR expr CPAREN           { CarS $3 }
   | OPAREN CDR expr CPAREN           { CdrS $3 }
