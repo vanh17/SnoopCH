@@ -27,6 +27,7 @@
 %token ISSTRING
 %token ISCHAR
 %token MAKESTRING
+%token STRINGFROMLST
 %token CHARTOINT
 %token INTTOCHAR
 %token LET
@@ -89,6 +90,10 @@ listPairExpr:
   | pairExpr listPairExpr        { $1 :: $2 }
 ;
 
+listChar:
+  | CPAREN                       { [] }
+  | CHAR listChar                { (CharS $1) :: $2 }
+
 pairExpr:
   | OSB expr expr CSB            { ($2, $3) }
 ;
@@ -140,5 +145,6 @@ expr:
   | OPAREN CHARTOINT expr CPAREN                            { CharToIntS $3 }
   | OPAREN INTTOCHAR expr CPAREN                            { IntToCharS $3 }
   | OPAREN MAKESTRING INT CHAR CPAREN                       { MakeStringS (IntS $3, CharS $4) }
+  | OPAREN STRINGFROMLST listChar                           { StringFromLstS $3 }
 ;
 

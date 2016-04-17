@@ -14,6 +14,10 @@ Build interpreter for small part of Racket:
 - symbols, strings
 - lambdas (variable number of arguments), function calls
 - String?
+- make-string
+- Char?
+- char->integer
+- integer->char
 
 
 

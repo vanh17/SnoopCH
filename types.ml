@@ -43,6 +43,7 @@ type exprS = IntS of int
              | CharToIntS of exprS
              | IntToCharS of exprS
              | MakeStringS of exprS * exprS
+             | StringFromLstS of exprS list
              | DefineS of exprS * exprS
              | CallS of (exprS * (exprS list))
 
@@ -82,6 +83,7 @@ type exprC = IntC of int
              | CharToIntC of exprC
              | IntToCharC of exprC
              | MakeStringC of exprC * exprC
+             | StringFromLstC of exprC list
              | DefineC of exprC * exprC
              | CallC of (exprC * (exprC list))
 
@@ -357,6 +359,7 @@ let rec desugar exprS = match exprS with
   | CharToIntS i        -> CharToIntC (desugar i)
   | IntToCharS i        -> IntToCharC (desugar i)
   | MakeStringS (k, c)  -> MakeStringC (desugar k, desugar c)
+  | StringFromLstS clst -> StringFromLstC (List.map (fun x -> desugar x) clst)
   | DefineS (var, value)-> DefineC (desugar var, desugar value)
   | CallS (f, i)        -> CallC (desugar f, List.map (fun x -> desugar x) i)
 
@@ -443,6 +446,9 @@ let rec interp env r = match r with
                              | (Int i, Chara v) -> String (let rec aux n s = if n = 0 then "" else s ^ (aux (n - 1) s)
                                                     in aux i (Char.escaped v))
                              | _                -> raise (Interp "makeStringErr: need an integer and single character") )
+  | StringFromLstC clst -> String (List.fold_right (fun x y -> ( match x with 
+                                                                 | Chara c -> (Char.escaped c) ^ y
+                                                                 | _ -> raise (Interp "stringErr: need a list of single charaters") ) ) (List.map (fun t -> interp env t) clst) "")
   | DefineC (var, value)-> ( match var with
                              | VarC v -> let r = RefToOpV (ref None) 
                                          in ( match (enref:= (bind v r (!enref))) with
