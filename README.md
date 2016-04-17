@@ -110,7 +110,7 @@ Example:
 
 ### Conditionals: if, cond, and, and or
 - `(if test-expr then-expr else-expr)`
-Evaluates test-expr. If it produces any value other than #f, then then-expr is evaluated, and its results are the result for the if form. Otherwise, else-expr is evaluated, and its results are the result for the if form. The then-expr and else-expr are in tail position with respect to the if form.
+Evaluates test-expr. If it produces any value other than `#f`, then then-expr is evaluated, and its results are the result for the if form. Otherwise, else-expr is evaluated, and its results are the result for the if form. The then-expr and else-expr are in tail position with respect to the if form.
 Examples:
 `> (if (positive? -5) (error "doesn't get here") 2)
 2
@@ -132,7 +132,7 @@ If no cond-clauses are present, the result is #<void>.
 
 If only a [else then-body ...+] is present, then the then-bodys are evaluated. The results from all but the last then-body are ignored. The results of the last then-body, which is in tail position with respect to the cond form, are the results for the whole cond form.
 
-Otherwise, the first test-expr is evaluated. If it produces #f, then the result is the same as a cond form with the remaining cond-clauses, in tail position with respect to the original cond form. Otherwise, evaluation depends on the form of the cond-clause:
+Otherwise, the first test-expr is evaluated. If it produces `#f`, then the result is the same as a cond form with the remaining cond-clauses, in tail position with respect to the original cond form. Otherwise, evaluation depends on the form of the cond-clause:
 
 `[test-expr then-body ...+]`
 The then-bodys are evaluated in order, and the results from all but the last then-body are ignored. The results of the last then-body, which is in tail position with respect to the cond form, provides the result for the whole cond form.
@@ -160,36 +160,36 @@ Examples:
    [(member 2 '(1 2 3))])
 '(2 3)
 - `(and expr ...)`
-If no exprs are provided, then result is #t.
+If no exprs are provided, then result is `#t`.
 
 If a single expr is provided, then it is in tail position, so the results of the and expression are the results of the expr.
 
-Otherwise, the first expr is evaluated. If it produces #f, the result of the and expression is #f. Otherwise, the result is the same as an and expression with the remaining exprs in tail position with respect to the original and form.
+Otherwise, the first expr is evaluated. If it produces `#f`, the result of the and expression is `#f`. Otherwise, the result is the same as an and expression with the remaining exprs in tail position with respect to the original and form.
 
 Examples:
 `> (and)
-#t
+`#t`
 > (and 1)
 1
 > (and (values 1 2))
 1
 2
-> (and #f (error "doesn't get here"))
-#f
-> (and #t 5)
+> (and `#f` (error "doesn't get here"))
+`#f`
+> (and `#t` 5)
 5`
 
 - `(or expr ...)`
 +Combining Tests: and and or in The Racket Guide introduces or.
-If no exprs are provided, then result is #f.
+If no exprs are provided, then result is `#f`.
 
 If a single expr is provided, then it is in tail position, so the results of the or expression are the results of the expr.
 
-Otherwise, the first expr is evaluated. If it produces a value other than #f, that result is the result of the or expression. Otherwise, the result is the same as an or expression with the remaining exprs in tail position with respect to the original or form.
+Otherwise, the first expr is evaluated. If it produces a value other than `#f`, that result is the result of the or expression. Otherwise, the result is the same as an or expression with the remaining exprs in tail position with respect to the original or form.
 
 Examples:
 `> (or)
-#f
+`#f`
 > (or 1)
 1
 > (or (values 1 2))
@@ -197,30 +197,30 @@ Examples:
 2
 > (or 5 (error "doesn't get here"))
 5
-> (or #f 5)
+> (or `#f` 5)
 5`
 
 ### Datatypes
 #### 1 Booleans and Equality
-True and false booleans are represented by the values #t and #f, respectively, though operations that depend on a boolean value typically treat anything other than #f as true. The #t value is always eq? to itself, and #f is always eq? to itself.
+True and false booleans are represented by the values `#t` and `#f`, respectively, though operations that depend on a boolean value typically treat anything other than `#f` as true. The `#t` value is always eq? to itself, and `#f` is always eq? to itself.
 - `(boolean? v) → boolean?`
   v : any/c
-Returns #t if v is #t or #f, #f otherwise.
+Returns `#t` if v is `#t` or `#f`, `#f` otherwise.
 Examples:
-`> (boolean? #f)`
+`> (boolean? `#f`)`
 `#t`
-`> (boolean? #t)`
+`> (boolean? `#t`)`
 `#t`
 `> (boolean? 'true)`
 `#f`
 procedure
 - `(not v) → boolean?`
   v : any/c
-Returns #t if v is #f, #f otherwise.
+Returns `#t` if v is `#f`, `#f` otherwise.
 Examples:
-`> (not #f)`
+`> (not `#f`)`
 `#t`
-`> (not #t)`
+`> (not `#t`)`
 `#f`
 `> (not 'we-have-no-bananas)`
 `#f`
@@ -252,7 +252,7 @@ In the case of complex numbers, either the real and imaginary parts are both exa
 
 Inexact real numbers are implemented as either single- or double-precision IEEE floating-point numbers—the latter by default, and the former only when a computation starts with numerical constants specified as single-precision numbers. Inexact real numbers that are represented as double-precision floating-point numbers are flonums.
 
-Inexact numbers can be coerced to exact form, except for the inexact numbers +inf.0, +inf.f, -inf.0, -inf.f, +nan.0, and +nan.f, which have no exact form. Dividing a number by exact zero raises an exception; dividing a non-zero number other than +nan.0 or +nan.f by an inexact zero returns +inf.0, +inf.f, -inf.0 or -inf.f, depending on the sign and precision of the dividend. The +nan.0 value is not = to itself, but +nan.0 is eqv? to itself, and +nan.f is similarly eqv? but not = to itself. Conversely, (= 0.0 -0.0) is #t, but (eqv? 0.0 -0.0) is #f, and the same for 0.0f0 and -0.0f0 (which are single-precision variants). The datum -nan.0 refers to the same constant as +nan.0, and -nan.f is the same as +nan.f.
+Inexact numbers can be coerced to exact form, except for the inexact numbers +inf.0, +inf.f, -inf.0, -inf.f, +nan.0, and +nan.f, which have no exact form. Dividing a number by exact zero raises an exception; dividing a non-zero number other than +nan.0 or +nan.f by an inexact zero returns +inf.0, +inf.f, -inf.0 or -inf.f, depending on the sign and precision of the dividend. The +nan.0 value is not = to itself, but +nan.0 is eqv? to itself, and +nan.f is similarly eqv? but not = to itself. Conversely, (= 0.0 -0.0) is `#t`, but (eqv? 0.0 -0.0) is `#f`, and the same for 0.0f0 and -0.0f0 (which are single-precision variants). The datum -nan.0 refers to the same constant as +nan.0, and -nan.f is the same as +nan.f.
 
 - Arithmetic
 `(+ z ...) → number?`
@@ -312,74 +312,74 @@ Examples:
 - `(= z w ...+) → boolean?`
   z : number?
   w : number?
-Returns #t if all of the arguments are numerically equal, #f otherwise. An inexact number is numerically equal to an exact number when the exact coercion of the inexact number is the exact number. Also, 0.0 and -0.0 are numerically equal, but +nan.0 is not numerically equal to itself.
+Returns `#t` if all of the arguments are numerically equal, `#f` otherwise. An inexact number is numerically equal to an exact number when the exact coercion of the inexact number is the exact number. Also, 0.0 and -0.0 are numerically equal, but +nan.0 is not numerically equal to itself.
 Examples:
 `> (= 1 1.0)
-#t
+`#t`
 > (= 1 2)
-#f
+`#f`
 > (= 2+3i 2+3i 2+3i)
-#t`
+`#t`
 
 - `(< x y ...+) → boolean?`
   x : real?
   y : real?
-Returns #t if the arguments in the given order are strictly increasing, #f otherwise.
+Returns `#t` if the arguments in the given order are strictly increasing, `#f` otherwise.
 Examples:
 `> (< 1 1)
-#f
+`#f`
 > (< 1 2 3)
-#t
+`#t`
 > (< 1 +inf.0)
-#t
+`#t`
 > (< 1 +nan.0)
-#f`
+`#f`
 
 - `(<= x y ...+) → boolean?`
   x : real?
   y : real?
-Returns #t if the arguments in the given order are non-decreasing, #f otherwise.
+Returns `#t` if the arguments in the given order are non-decreasing, `#f` otherwise.
 Examples:
 `> (<= 1 1)
-#t
+`#t`
 > (<= 1 2 1)
-#f`
+`#f`
 
 - `(> x y ...+) → boolean?`
   x : real?
   y : real?
-Returns #t if the arguments in the given order are strictly decreasing, #f otherwise.
+Returns `#t` if the arguments in the given order are strictly decreasing, `#f` otherwise.
 Examples:
 `> (> 1 1)
-#f
+`#f`
 > (> 3 2 1)
-#t
+`#t`
 > (> +inf.0 1)
-#t
+`#t`
 > (> +nan.0 1)
-#f`
+`#f`
 
 - `(>= x y ...+) → boolean?`
   x : real?
   y : real?
-Returns #t if the arguments in the given order are non-increasing, #f otherwise.
+Returns `#t` if the arguments in the given order are non-increasing, `#f` otherwise.
 Examples:
 `> (>= 1 1)
-#t
+`#t`
 > (>= 1 2 1)
-#f`
+`#f`
 
 #### 2 String Constructors, Selectors, and Mutators
 
 procedure
 `(string? v) → boolean?`
   v : any/c
-Returns #t if v is a string, #f otherwise.
+Returns `#t` if v is a string, `#f` otherwise.
 Examples:
 `> (string? "Apple")
-#t`
+`#t`
 `> (string? 'apple)
-#f`
+`#f`
 
 - `(make-string k [char]) → string?`
   k : exact-nonnegative-integer?
@@ -399,7 +399,7 @@ Example:
 #### 3 Characters and Scalar Values
 - `(char? v) → boolean?`
   v : any/c
-Return #t if v is a character, #f otherwise.
+Return `#t` if v is a character, `#f` otherwise.
 procedure
 - `(char->integer char) → exact-integer?`
   char : char?
@@ -425,18 +425,18 @@ Cyclic data structures can be created using only immutable pairs via read or mak
 
 - `(pair? v) → boolean?`
   v : any/c
-Returns #t if v is a pair, #f otherwise.
+Returns `#t` if v is a pair, `#f` otherwise.
 Examples:
 `> (pair? 1)
-#f
+`#f`
 > (pair? (cons 1 2))
-#t
+`#t`
 > (pair? (list 1 2))
-#t
+`#t`
 > (pair? '(1 2))
-#t
+`#t`
 > (pair? '())
-#f`
+`#f`
 
 - `(cons a d) → pair?`
   a : any/c
