@@ -47,6 +47,8 @@ type exprS = IntS of int
              | MapS of exprS * exprS
              | FoldlS of (exprS * exprS * exprS)
              | FoldrS of (exprS * exprS * exprS)
+             | FilterS of exprS * exprS
+             | RemoveS of exprS * exprS
              | DefineS of exprS * exprS
              | CallS of (exprS * (exprS list))
 
@@ -90,6 +92,8 @@ type exprC = IntC of int
              | MapC of exprC * exprC
              | FoldlC of (exprC * exprC * exprC)
              | FoldrC of (exprC * exprC * exprC)
+             | FilterC of exprC * exprC
+             | RemoveC of exprC * exprC
              | DefineC of exprC * exprC
              | CallC of (exprC * (exprC list))
 
@@ -275,13 +279,13 @@ let rec arithEval op v1 v2 = match (op, v1, v2) with
                          | _ -> raise (Interp "interpErr: not a num")
 
 
-let compEval op v1 v2 = match (op, v1, v2) with
-                        | (">", Num x, Num y)   -> Bool (x > y) 
-                        | (">=", Num x, Num y)  -> Bool (x >= y)
-                        | ("<", Num x, Num y)   -> Bool (x < y)
-                        | ("<=", Num x, Num y)  -> Bool (x <= y)
-                        | (_, Num x, Num y)     -> raise (Interp "interpErr: only <, <=, >, >=")
-                        | _                     -> raise (Interp "interpErr: not a num")
+let compEval op v1 v2 = match (op, toComplexN v1, toComplexN v2) with
+                        | (">", ComplexN (x1, x2), ComplexN (y1, y2))   -> if (not (x2*.y2 = 0.0)) then raise (Interp "compErr: cant compare complex number") else Bool (x1 > y1) 
+                        | (">=", ComplexN (x1, x2), ComplexN (y1, y2))  -> if (not (x2*.y2 = 0.0)) then raise (Interp "compErr: cant compare complex number") else Bool (x1 >= y1)
+                        | ("<", ComplexN (x1, x2), ComplexN (y1, y2))   -> if (not (x2*.y2 = 0.0)) then raise (Interp "compErr: cant compare complex number") else Bool (x1 < y1)
+                        | ("<=", ComplexN (x1, x2), ComplexN (y1, y2))  -> if (not (x2*.y2 = 0.0)) then raise (Interp "compErr: cant compare complex number") else Bool (x1 <= y1)
+                        | (_, ComplexN (x1, x2), ComplexN (y1, y2))     -> raise (Interp "interpErr: only <, <=, >, >=")
+                        | _                                             -> raise (Interp "interpErr: not a num")
 
 let isNum n = match n with
               | Num _ -> true
@@ -319,6 +323,23 @@ let rec bindList lstVar lstVal env = match (lstVar, lstVal) with
                                      | ((VarC var1) :: varest, val1 :: vlrest) -> let e = bind var1 val1 env 
                                                                            in bindList varest vlrest e
                                      | _ -> raise (Interp "callErr: arguments and inputs do not match")
+
+let rec isTheSame e1 e2 = match (e1, e2) with
+                          | (Pinf, Pinf) -> true
+                          | (Ninf, Ninf) -> true 
+                          | (Nan, Nan)   -> true 
+                          | (String s1, String s2)         -> s1 = s2
+                          | (Chara c1, Chara c2)           -> c1 = c2
+                          | (CharNull _, CharNull _)       -> true
+                          | (List l1, List l2)             -> ( match (l1, l2) with
+                                                                | ([], []) -> true
+                                                                | (e1::rest1, e2::rest2) -> (isTheSame e1 e2) && (isTheSame (List rest1) (List rest2))
+                                                                | _ -> false )
+                          | (Pair (x1, x2), Pair (y1, y2)) -> (isTheSame x1 y1) && (isTheSame x2 y2)
+                          | (Null, Null)                   -> true
+                          | _ -> (try (eqEval e1 e2; ( match (eqEval e1 e2) with
+                                                       | Bool i -> i
+                                                       | _      -> false )) with _ -> false)
 
 
 (* INTERPRETER *)
@@ -369,8 +390,10 @@ let rec desugar exprS = match exprS with
   | MapS (f, lst)       -> MapC (desugar f, desugar lst)
   | FoldrS (f, init, lst) -> FoldrC (desugar f, desugar init, desugar lst)
   | FoldlS (f, lst, init) -> FoldlC (desugar f, desugar lst, desugar init)
-  | DefineS (var, value)-> DefineC (desugar var, desugar value)
-  | CallS (f, i)        -> CallC (desugar f, List.map (fun x -> desugar x) i)
+  | FilterS (c, lst)      -> FilterC (desugar c, desugar lst)
+  | RemoveS (e, lst)      -> RemoveC (desugar e, desugar lst)
+  | DefineS (var, value)  -> DefineC (desugar var, desugar value)
+  | CallS (f, i)          -> CallC (desugar f, List.map (fun x -> desugar x) i)
 
 
 (* You will need to add cases here. *)
@@ -468,6 +491,19 @@ let rec interp env r = match r with
                                | ListC [] -> interp env init
                                | ListC (e :: rest) -> interp env (FoldlC (f, CallC (f, e :: init :: []), ListC rest)) 
                                | _ -> raise (Interp "foldlErr: not a list") )
+  | FilterC (c, lst)      -> ( match lst with
+                               | ListC l -> interp env (ListC (List.filter (fun x -> ( match (interp env (CallC (c, x :: []))) with
+                                                                                       | Bool true -> true
+                                                                                       | _         -> false)) l))
+                               | _ -> raise (Interp "filterErr: not a list") )
+  | RemoveC (e, lst)      -> let rec aux e1 lst1 acc = ( match lst1 with
+                                                         | List [] -> []
+                                                         | List (e2 :: rest) -> ( match (isTheSame e2 e1) with
+                                                                                  | true -> (if acc > 0 then e2 :: (aux e1 (List rest) acc)
+                                                                                                 else (aux e1 (List rest) (acc + 1)))
+                                                                                  | _         -> e2 :: (aux e1 (List rest) acc) )
+                                                         | _ -> raise (Interp "removeErr: not a list") )
+                            in List (aux (interp env e) (interp env lst) 0)
   | DefineC (var, value)-> ( match var with
                              | VarC v -> let r1 = RefToOpV (ref None) 
                                          in ( match (enref:= (bind v r1 (!enref))) with

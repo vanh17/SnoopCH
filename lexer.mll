@@ -21,7 +21,7 @@ let nan = "+nan.0"
 let true = ("true" | "#t")
 let false = ("false" | "#f")
 let comp = (">" | ">=" | "<" | "<=")
-let var = (['A'-'Z'] | ['a' - 'z'] | digit | sign | '.' | '?' | '/' | comp | '\\' | '@' | '$' | '%' | '~' | ',' | '_')+
+let var = (['A'-'Z'] | ['a' - 'z'] | digit | sign | '.' | '?' | '/' | '>' | '<' | '=' | '\\' | '@' | '$' | '%' | '~' | ',' | '_')+
 let st  = (['A'-'Z'] | ['a' - 'z'] | digit | sign | '.' | '?' | '/' | '>' | '<' | '\\' | '@' | '$' | '%' | '~' | ',' | '_' | '#' | ''' | '|' | '\"')
 let stg = '"' st+ '"'
 let chr = '#' '\\' st+  
@@ -84,11 +84,13 @@ rule token = parse
   | "map"       { MAP }
   | "foldr"     { FOLDR }
   | "foldl"     { FOLDL }
+  | "filter"    { FILTER }
+  | "remove"    { REMOVE }
   | "define"    { DEFINE }
   | "char->integer" { CHARTOINT }
   | "integer->char" { INTTOCHAR }
-  | var as s    { VAR s }
   | comp as s   { COMPOP s}
+  | var as s    { VAR s }
   | stg as s    { STRING s}
   | '#' '\\' (st as s)                { CHAR s }
   | '#' '\\' ("null" | "nul" as s)    { CHARNULL s }

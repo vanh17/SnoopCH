@@ -33,6 +33,8 @@
 %token MAP
 %token FOLDR
 %token FOLDL
+%token FILTER
+%token REMOVE
 %token LET
 %token LETS
 %token LETREC
@@ -152,5 +154,7 @@ expr:
   | OPAREN MAP expr expr CPAREN                             { MapS ($3, $4) }
   | OPAREN FOLDL expr expr expr CPAREN                      { FoldlS ($3, $4, $5) }
   | OPAREN FOLDR expr expr expr CPAREN                      { FoldrS ($3, $4, $5) }
+  | OPAREN FILTER expr expr CPAREN                          { FilterS ($3, $4) }
+  | OPAREN REMOVE expr expr CPAREN                          { RemoveS ($3, $4) }
 ;
 

@@ -46,6 +46,8 @@ type exprS = IntS of int
              | MapS of exprS * exprS
              | FoldlS of (exprS * exprS * exprS)
              | FoldrS of (exprS * exprS * exprS)
+             | FilterS of exprS * exprS
+             | RemoveS of exprS * exprS
              | DefineS of exprS * exprS
              | CallS of (exprS * (exprS list))
 type exprC = IntC of int
@@ -87,6 +89,8 @@ type exprC = IntC of int
              | MapC of exprC * exprC
              | FoldlC of (exprC * exprC * exprC)
              | FoldrC of (exprC * exprC * exprC)
+             | FilterC of exprC * exprC
+             | RemoveC of exprC * exprC
              | DefineC of exprC * exprC
              | CallC of (exprC * (exprC list))
 type value = Int of int
@@ -141,3 +145,4 @@ val condEval : (exprC * exprC) list -> exprC
 val isPair : value -> bool
 val isList : value -> bool
 val isNum : value -> bool
+val isTheSame : value -> value -> bool
