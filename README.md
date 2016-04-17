@@ -8,13 +8,13 @@ Build interpreter for part of Racket:
 - Refers to a top-level, module-level, or local binding, when id is not bound as a transformer (see Expansion). At run-time, the reference evaluates to the value in the location associated with the binding.
 When the expander encounters an id that is not bound by a module-level or local binding, it converts the expression to (#%top . id) giving #%top the lexical context of the id; typically, that context refers to #%top. 
 - Examples:
-       > (define x 10)
-       > x
-       10
-       > (let ([x 5]) x)
-       5
-       > ((lambda (x) x) 2)
-       2
+       `> (define x 10)
+        > x
+        10
+        > (let ([x 5]) x)
+        5
+        > ((lambda (x) x) 2)
+        2`
 
 ### Procedure Expressions: lambda
 - Produces a procedure. The kw-formals determines the number of arguments and which keyword arguments that the procedure accepts.
@@ -59,65 +59,65 @@ If the procedure produced by lambda is applied to fewer or more by-position or b
 The last body expression is in tail position with respect to the procedure body.
 
 - Examples:
-> ((lambda (x) x) 10)
+`> ((lambda (x) x) 10)
 10
 > ((lambda (x y) (list y x)) 1 2)
 '(2 1)
 > ((lambda (x [y 5]) (list y x)) 1 2)
-'(2 1)
+'(2 1)`
 
 ### Local Binding: let, let*, letrec
 - `(let ([id val-expr] ...) body ...+)`
 - `(let proc-id ([id init-expr] ...) body ...+)`
 The first form evaluates the val-exprs left-to-right, creates a new location for each id, and places the values into the locations. It then evaluates the bodys, in which the ids are bound. The last body expression is in tail position with respect to the let form. The ids must be distinct according to bound-identifier=?.
 Examples:
-> (let ([x 5]) x)
+`> (let ([x 5]) x)
 5
 > (let ([x 5])
     (let ([x 2]
           [y x])
       (list y x)))
-'(5 2)
+'(5 2)`
 The second form evaluates the init-exprs; the resulting values become arguments in an application of a procedure (lambda (id ...) body ...+), where proc-id is bound within the bodys to the procedure itself.
 
 Example:
-> (let fac ([n 10])
+`> (let fac ([n 10])
     (if (zero? n)
         1
         (* n (fac (sub1 n)))))
-3628800
+3628800`
 - `(let* ([id val-expr] ...) body ...+)`
 Like let, but evaluates the val-exprs one by one, creating a location for each id as soon as the value is available. The ids are bound in the remaining val-exprs as well as the bodys, and the ids need not be distinct; later bindings shadow earlier bindings.
 Example:
-> (let* ([x 1]
+`> (let* ([x 1]
          [y (+ x 1)])
     (list y x))
-'(2 1)
+'(2 1)`
 syntax
 - `(letrec ([id val-expr] ...) body ...+)`
 Like let, including left-to-right evaluation of the val-exprs, but the locations for all ids are created first, all ids are bound in all val-exprs as well as the bodys, and each id is initialized immediately after the corresponding val-expr is evaluated. The ids must be distinct according to bound-identifier=?.
 Referencing or assigning to an id before its initialization raises exn:fail:contract:variable. If an id (i.e., the binding instance or id) has an 'undefined-error-name syntax property whose value is a symbol, the symbol is used as the name of the variable for error reporting, instead of the symbolic form of id.
 
 Example:
-> (letrec ([is-even? (lambda (n)
+`> (letrec ([is-even? (lambda (n)
                        (or (zero? n)
                            (is-odd? (sub1 n))))]
            [is-odd? (lambda (n)
                       (and (not (zero? n))
                            (is-even? (sub1 n))))])
-    (is-odd? 11))
+    (is-odd? 11))`
 `#t`
 
 ### Conditionals: if, cond, and, and or
 - `(if test-expr then-expr else-expr)`
 Evaluates test-expr. If it produces any value other than #f, then then-expr is evaluated, and its results are the result for the if form. Otherwise, else-expr is evaluated, and its results are the result for the if form. The then-expr and else-expr are in tail position with respect to the if form.
 Examples:
-> (if (positive? -5) (error "doesn't get here") 2)
+`> (if (positive? -5) (error "doesn't get here") 2)
 2
 > (if (positive? 5) 1 (error "doesn't get here"))
 1
 > (if 'we-have-no-bananas "yes" "no")
-"yes"
+"yes"`
 
 - `(cond cond-clause ...)`
  
@@ -167,7 +167,7 @@ If a single expr is provided, then it is in tail position, so the results of the
 Otherwise, the first expr is evaluated. If it produces #f, the result of the and expression is #f. Otherwise, the result is the same as an and expression with the remaining exprs in tail position with respect to the original and form.
 
 Examples:
-> (and)
+`> (and)
 #t
 > (and 1)
 1
@@ -177,7 +177,7 @@ Examples:
 > (and #f (error "doesn't get here"))
 #f
 > (and #t 5)
-5
+5`
 
 - `(or expr ...)`
 +Combining Tests: and and or in The Racket Guide introduces or.
@@ -188,7 +188,7 @@ If a single expr is provided, then it is in tail position, so the results of the
 Otherwise, the first expr is evaluated. If it produces a value other than #f, that result is the result of the or expression. Otherwise, the result is the same as an or expression with the remaining exprs in tail position with respect to the original or form.
 
 Examples:
-> (or)
+`> (or)
 #f
 > (or 1)
 1
@@ -198,23 +198,7 @@ Examples:
 > (or 5 (error "doesn't get here"))
 5
 > (or #f 5)
-5
-
-
-- Parsing
-- Real numbers (floating point), infinity, nan
-- Integers, operations to take arbitrary number of values
-- Booleans, conditionals, "cond", case/switch?
-- cons, car, cdr, null, lists, map, filter, foldl/r
-- let, let*, letrec, define
-- begin, (set! ?), box, set-box!
-- symbols, strings
-- lambdas (variable number of arguments), function calls
-- String?
-- make-string
-- Char?
-- char->integer
-- integer->char
+5`
 
 ### Datatypes
 #### 1 Booleans and Equality
@@ -490,6 +474,7 @@ Examples:
 '(1 2 3 4)
 > (list (list 1 2) (list 3 4))
 '((1 2) (3 4))`
+
 
 
 
