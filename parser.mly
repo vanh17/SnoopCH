@@ -64,7 +64,7 @@
 %%
 
 main:
-  | headEx DBLSEMI               { $1 }
+  | headEx                       { $1 }
 ;
 
 headEx:
