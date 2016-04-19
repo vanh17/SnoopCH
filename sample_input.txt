@@ -48,7 +48,7 @@
 (equal? (remove (cons 2 3) (list (cons 2 3) #\a #\b (cons 2 3) #\c (cons 2 3))) '(#\a #\b '(2 . 3) #\c '(2 . 3)))
 (equal? '("2") '("2"))
 (equal? "2" "2")
-;;this is a comment;;
+;;this is a comment
 (define (f x y z)
        (+ x (* y z)))
 (equal? (f 3 4 5) 23)
@@ -61,6 +61,7 @@
         (if (number? (car ls))
                (+ (car ls) (add-nums (cdr ls)))
                (add-nums (cdr ls)))))
+(write "add-nums defined")
 (equal? (add-nums (list)) 0) 
 (equal? (add-nums (list 1 2 "a" 3)) 6) 
 (equal? (add-nums (list '(1 2 3) #\b #\d)) 0)
@@ -71,7 +72,84 @@
   (if (null? ls)
       0
       (+ 1 (length (cdr ls)))))
+(write "length defined")
 (equal? (length (list)) 0)
 (equal? (length (list 1 2 3 "a" "b" "c")) 6)
 (equal? (length (list "abc" 3 3 4 5)) 5)
 (equal? (length (list (cons 1 2) (cons 3 4) (cons 4 5))) 3)
+;; this is the crazy comment, you can put everthing in here enter and type what you want to read, but if you want to do lines comments
+;; start with this at the beginning. Whatever behind the double semi colon ";;" will treat as the comment ;;%U@!(*JF*(!38t)))#%2985296@(%(#@$*@#$&@#*(%#@)%(#)@)$(@!)%1891340123012950328539$_@!(38@!#*&@!Y#&@!*#*@!#8213))
+(error "this is the very first error")
+;; Write a function `get-nth`. It takes as input a list and an integer, and it returns
+;; the n-th element in the list, starting at index 0. If the integer is negative it
+;; should return `(error "negative index")`. If the list is not long enough it should
+;; return `(error "list too short")`.
+;; The reference solution is 5 lines.
+(define (get-nth ls n)
+  (cond
+    [(< n 0) (error "negative index")]
+    [(>= n (length ls)) (error "list too short")]
+    [(= n 0) (car ls)]
+    [(> n 0) (get-nth (cdr ls) (- n 1))]))
+(write "get-nth defined")
+;; Write a function `every-other`. It takes as input a list, and it returns a new list
+;; where every other term is skipped. So applied to the list `'(1 2 3)` it should return
+;; `'(1 3)`, and the same for the list `'(1 2 3 4)`.
+;; The reference solution is 5 lines.
+(define (every-other ls)
+  (cond
+    [(null? ls) null]
+    [(null? (cdr ls)) ls]
+    [true (cons (car ls) (every-other (cdr (cdr ls))))]))
+(write "every-other defined")
+;; Write a function `map`. It takes two arguments: a function and a list. It then
+;; returns a new list of the result of applying the function on each element.
+;; The reference solution is 5 lines.
+(define (map1 f ls)
+  (if (null? ls)
+      null
+      (cons (f (car ls))
+            (map1 f (cdr ls)))))
+(write "map1 defined")
+;; Write a function `map2`. It takes three arguments: a function that takes two inputs
+;; and two lists. It then creates a single new list by applying the function to pairs
+;; of values one from each list. The process stops when one of the lists is empty.
+;; The reference solution is 5 lines.
+(define (map2 f ls1 ls2)
+  (if (or (null? ls1) (null? ls2))
+      null
+      (cons (f (car ls1) (car ls2))
+            (map2 f (cdr ls1) (cdr ls2)))))
+(write "map2 defined")
+;; Write a function `filter`. It takes as input a function and a list and returns
+;; a new list consisting of those elements for which the function does not return #f
+;; The reference solution is 5 lines.
+(define (filter1 f ls)
+  (cond
+      [(null? ls) null]
+      [(f (car ls)) (cons (car ls) (filter1 f (cdr ls)))]
+      [#t (filter1 f (cdr ls))]))
+(write "filter1 defined")
+;; Write a function `call-all`. It takes as input a list of "thunks", and returns a
+;; list of the results of calling those thunks. To call a function, you put it as the
+;; first entry in parentheses, followed by any arguments it may have.
+;; The reference solution is 4 lines.
+(define (call-all ls)
+  (if (null? ls)
+      null
+      (cons (car ls) (call-all (cdr ls)))))
+(write "call-all defined")
+(write "add-nums tests")
+(equal? (add-nums (list)) 0) ;;empty list
+(equal? (add-nums (list 1 2 'a 3)) 6) ;; non-number
+(equal? (add-nums (list 'a 'b 'c)) 0) ;; all non-number
+(equal? (add-nums (list 0 0 0)) 0) ;; all zero
+(equal? (add-nums (list -1 0 1)) 0) ;; negative number
+(equal? (add-nums (list (cons 1 2) (cons 3 4) (cons 'a 'b))) 0) ;;list of pair
+
+;; length
+(write "length tests")
+(equal? (length (list)) 0) ;; empty list
+(equal? (length (list 1 2 3 'a 'b 'c)) 6) ;; non-numbers and numbers
+(equal? (length (list "abc" '3 '3' 4' 5)) 5) ;; string and other elements
+(equal? (length (list (cons 1 2) (cons 3 4) (cons 4 5))) 3) ;; pair list

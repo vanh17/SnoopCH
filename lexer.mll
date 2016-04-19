@@ -23,11 +23,11 @@ let false = ("false" | "#f")
 let comp = (">" | ">=" | "<" | "<=")
 let var = (['A'-'Z'] | ['a' - 'z'] | digit | sign | '.' | '?' | '/' | '>' | '<' | '=' | '\\' | '@' | '$' | '%' | '~' | ',' | '_' | '*')+
 let st  = (['A'-'Z'] | ['a' - 'z'] | digit | sign | '.' | '?' | '/' | '>' | '<' | '\\' | '@' | '$' | '%' | '~' | ',' | '_' | '#' | ''' | '|' | ':')
-let stg = '"' (st | ' ')+ '"'
+let stg = '"' (st | ' ' | '[' | ']' | '(' | ')' | '~' | '&' | '!')+ '"'
 let chr = '#' '\\' st+  
 
 rule token = parse
-  | ";;" ((st | white | '~' | '&' | '*' | var | '"' | '[' | ']' | '(' | ')')+ as s) ";;"  { token lexbuf } 
+  | ";;" ((st | ' ' | '\t' | '~' | '&' | '*' | var | '"' | '[' | ']' | '(' | ')' | ';' | '!' | ''' | '`')+ as s) newline  { token lexbuf } 
   | white       { token lexbuf }
   | newline     { token lexbuf }
   | true        { TRUE }
@@ -94,6 +94,8 @@ rule token = parse
   | "integer->char" { INTTOCHAR }
   | "null?"     { ISNULL }
   | "number?"   { ISNUM }
+  | "error"     { ERROR }
+  | "write"     { WRITE }
   | comp as s   { COMPOP s}
   | var as s    { VAR s }
   | stg as s    { STRING s }

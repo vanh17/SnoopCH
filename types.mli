@@ -51,6 +51,8 @@ type exprS = IntS of int
              | EqualS of exprS * exprS
              | IsNullS of exprS
              | IsNumS of exprS
+             | ErrorS of string
+             | WriteS of string
              | DefineS of exprS * exprS
              | CallS of (exprS * (exprS list))
 type exprC = IntC of int
@@ -97,6 +99,8 @@ type exprC = IntC of int
              | EqualC of exprC * exprC
              | IsNullC of exprC
              | IsNumC of exprC
+             | ErrorC of string
+             | WriteC of string
              | DefineC of exprC * exprC
              | CallC of (exprC * (exprC list))
 type value = Int of int
@@ -119,6 +123,7 @@ type value = Int of int
              | Null
              | FunClos of (exprC * (value env))
              | RefToOpV of (value option) ref
+             | Error of string
 
 
 (* Environment lookup *)

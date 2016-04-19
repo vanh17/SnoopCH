@@ -24,6 +24,7 @@
 %token FUN
 %token ISNULL
 %token ISNUM
+%token ERROR
 %token NULL
 %token LIST
 %token <string> VAR
@@ -36,6 +37,7 @@
 %token MAP
 %token FOLDR
 %token DOT
+%token WRITE
 %token FOLDL
 %token FILTER
 %token REMOVE
@@ -164,5 +166,7 @@ expr:
   | OPAREN EQUAL expr expr CPAREN                           { EqualS ($3, $4) }
   | OPAREN ISNULL expr CPAREN                               { IsNullS $3 }
   | OPAREN ISNUM expr CPAREN                                { IsNumS $3 }
+  | OPAREN ERROR STRING CPAREN                              { ErrorS $3 }
+  | OPAREN WRITE STRING CPAREN                              { WriteS $3 }
 ;
 

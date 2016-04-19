@@ -52,6 +52,8 @@ type exprS = IntS of int
              | EqualS of exprS * exprS
              | IsNullS of exprS
              | IsNumS of exprS
+             | ErrorS of string
+             | WriteS of string
              | DefineS of exprS * exprS
              | CallS of (exprS * (exprS list))
 
@@ -100,6 +102,8 @@ type exprC = IntC of int
              | EqualC of exprC * exprC
              | IsNullC of exprC
              | IsNumC of exprC
+             | ErrorC of string
+             | WriteC of string
              | DefineC of exprC * exprC
              | CallC of (exprC * (exprC list))
 
@@ -125,6 +129,7 @@ type value = Int of int
              | Null
              | FunClos of (exprC * (value env))
              | RefToOpV of (value option) ref
+             | Error of string
 
 let empty = []
 let enref = ref empty
@@ -401,6 +406,8 @@ let rec desugar exprS = match exprS with
   | EqualS (e1, e2)       -> EqualC (desugar e1, desugar e2)
   | IsNullS e             -> IsNullC (desugar e)
   | IsNumS e              -> IsNumC (desugar e)
+  | ErrorS e              -> ErrorC e
+  | WriteS s              -> WriteC s
   | DefineS (var, value)  -> DefineC (desugar var, desugar value)
   | CallS (f, i)          -> CallC (desugar f, List.map (fun x -> desugar x) i)
 
@@ -518,6 +525,8 @@ let rec interp env r = match r with
                                | List [] -> Bool true
                                | _       -> Bool false)
   | IsNumC e              -> Bool (isNum (interp env e))
+  | ErrorC e              -> Error e
+  | WriteC s              -> String s
   | DefineC (var, value)-> ( match var with
                              | VarC v -> let r1 = RefToOpV (ref None) 
                                          in ( match (enref:= (bind v r1 (!enref))) with
@@ -563,4 +572,5 @@ let rec valToString r = match r with
                                in "'(" ^ (listToString i) ^ ")"
   | Pair (x, y)             -> "'(" ^ (valToString x) ^ " . " ^ (valToString y) ^ ")"
   | FunClos _               -> "#<procedure>"
+  | Error e                 -> String.sub e 1 ((String.length e) - 2)
   | _                       -> ""
