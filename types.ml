@@ -18,6 +18,7 @@ type exprS = IntS of int
              | StringS of string
              | CharS of char
              | CharNullS of string
+             | SymbolS of string
              | EmptyS
              | IfS of exprS * exprS * exprS
              | OrS of exprS * exprS
@@ -54,6 +55,7 @@ type exprS = IntS of int
              | IsNumS of exprS
              | ErrorS of string
              | WriteS of string
+             | BeginS of exprS list
              | DefineS of exprS * exprS
              | CallS of (exprS * (exprS list))
 
@@ -72,6 +74,7 @@ type exprC = IntC of int
              | StringC of string
              | CharC of char
              | CharNullC of string
+             | SymbolC of string
              | EmptyC
              | IfC of exprC * exprC * exprC
              | ArithC of string * exprC * exprC
@@ -104,6 +107,7 @@ type exprC = IntC of int
              | IsNumC of exprC
              | ErrorC of string
              | WriteC of string
+             | BeginC of exprC list
              | DefineC of exprC * exprC
              | CallC of (exprC * (exprC list))
 
@@ -123,6 +127,7 @@ type value = Int of int
              | String of string
              | Chara of char
              | CharNull of string
+             | Symbol of string
              | Empty
              | List of value list
              | Pair of value * value
@@ -232,6 +237,8 @@ let rec arithEval op v1 v2 = match (op, v1, v2) with
                          | ("*", Num x, Num y) -> Num (x *. y)
                          | ("/", Num x, Num y) -> Num (x /. y)
                          | (_, Num x, Num y) -> raise (Interp "interpErr: only +, -, *")
+                         | (_, Num _, _)       -> arithEval op (toComplexN v1) (toComplexN v2)
+                         | (_, _, Num _)       -> arithEval op (toComplexN v1) (toComplexN v2)
                          | ("+", Int x, Int y) -> Int (x + y) 
                          | ("-", Int x, Int y) -> Int (x - y)
                          | ("*", Int x, Int y) -> Int (x * y)
@@ -243,12 +250,9 @@ let rec arithEval op v1 v2 = match (op, v1, v2) with
                          | ("/", Frac (x1, x2), Frac (y1, y2)) -> simplify_frac (Frac (x1 * y2, x2 * y1))
                          | (_, Frac (x1, x2), Frac (y1, y2)) -> raise (Interp "interpErr: only +, -, *")
                          | ("/", ComplexFr (x1, x2, x3, x4), Int i1) -> arithEval "*" v1 (ComplexFr (1, i1, 0, 1))
-                         | ("/", ComplexN (x1, x2), Num i1) -> arithEval "*" v1 (ComplexN (1.0 /. i1, 0.0))
                          | (_, Frac (x1, x2), _) -> arithEval op (ComplexFr (x1, x2, 0, 1)) v2
                          | (_, Int x1, _) -> arithEval op (ComplexFr (x1, 1, 0, 1)) v2
-                         | (_, Num x1, _) -> arithEval op (ComplexN (x1, 0.0)) v2
                          | (_, _, Int x1) -> arithEval op v1 (ComplexFr (x1, 1, 0, 1))
-                         | (_, _, Num x1) -> arithEval op v1 (ComplexN (x1, 0.0))
                          | (_, _, Frac (x1, x2)) -> arithEval op v1 (ComplexFr (x1, x2, 0, 1))
                          | ("+", ComplexFr (x1, x2, x3, x4), ComplexFr (y1, y2, y3, y4)) -> ( match (arithEval "+" (Frac (x1, x2)) (Frac (y1, y2)), arithEval "+" (Frac (x3, x4)) (Frac (y3, y4))) with
                                                                                               | (f1, Int 0) -> f1
@@ -371,6 +375,7 @@ let rec desugar exprS = match exprS with
   | StringS i           -> StringC i
   | CharS i             -> CharC i
   | CharNullS i         -> CharNullC i
+  | SymbolS s           -> SymbolC s
   | EmptyS              -> EmptyC
   | NullS               -> NullC
   | FracS (v1, v2)      -> FracC (v1, v2)
@@ -408,6 +413,7 @@ let rec desugar exprS = match exprS with
   | IsNumS e              -> IsNumC (desugar e)
   | ErrorS e              -> ErrorC e
   | WriteS s              -> WriteC s
+  | BeginS elst           -> BeginC (List.map (fun x -> desugar x) elst)
   | DefineS (var, value)  -> DefineC (desugar var, desugar value)
   | CallS (f, i)          -> CallC (desugar f, List.map (fun x -> desugar x) i)
 
@@ -428,7 +434,8 @@ let rec interp env r = match r with
   | BoolC i             -> Bool i
   | StringC i           -> String i 
   | CharC i             -> Chara i 
-  | CharNullC i         -> CharNull i   
+  | CharNullC i         -> CharNull i 
+  | SymbolC s           -> Symbol s  
   | EmptyC              -> Empty
   | FracC (v1, v2)      -> simplify_frac (Frac (v1, v2))
   | IfC (i1, i2, i3)    -> ( match (interp env i1) with
@@ -527,6 +534,13 @@ let rec interp env r = match r with
   | IsNumC e              -> Bool (isNum (interp env e))
   | ErrorC e              -> Error e
   | WriteC s              -> String s
+  | BeginC elst           -> let rec evaluateBegin lst = ( match lst with
+                                                           | [] -> Empty
+                                                           | (DefineC _) :: _ -> raise (Interp "beginErr: define is not allowed in the expression context")
+                                                           | e :: []   -> interp env e
+                                                           | e :: rest -> ( match interp env e with 
+                                                                            | _ -> evaluateBegin rest ) )
+                             in evaluateBegin elst
   | DefineC (var, value)-> ( match var with
                              | VarC v -> let r1 = RefToOpV (ref None) 
                                          in ( match (enref:= (bind v r1 (!enref))) with
@@ -564,6 +578,7 @@ let rec valToString r = match r with
   | String i                -> i
   | Chara i                  -> "#\\" ^ (Char.escaped i)
   | CharNull i              -> "#\\" ^ i
+  | Symbol s                -> "'" ^ s
   | Null                    -> "'()"
   | List i                  -> let rec listToString lst = match lst with
                                                           | [] -> ""

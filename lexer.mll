@@ -23,8 +23,8 @@ let false = ("false" | "#f")
 let comp = (">" | ">=" | "<" | "<=")
 let var = (['A'-'Z'] | ['a' - 'z'] | digit | sign | '.' | '?' | '/' | '>' | '<' | '=' | '\\' | '@' | '$' | '%' | '~' | ',' | '_' | '*')+
 let st  = (['A'-'Z'] | ['a' - 'z'] | digit | sign | '.' | '?' | '/' | '>' | '<' | '\\' | '@' | '$' | '%' | '~' | ',' | '_' | '#' | ''' | '|' | ':')
-let stg = '"' (st | ' ' | '[' | ']' | '(' | ')' | '~' | '&' | '!')+ '"'
-let chr = '#' '\\' st+  
+let stg = '"' (st | ' ' | '[' | ']' | '(' | ')' | '~' | '&' | '!' | var)+ '"'
+let chr = '#' '\\' st+ 
 
 rule token = parse
   | ";;" ((st | ' ' | '\t' | '~' | '&' | '*' | var | '"' | '[' | ']' | '(' | ')' | ';' | '!' | ''' | '`')+ as s) newline  { token lexbuf } 
@@ -33,21 +33,21 @@ rule token = parse
   | true        { TRUE }
   | false       { FALSE }
   | dblsemi     { DBLSEMI }
-  | float as x  { FLOAT (float_of_string x) }
-  | int as x    { INT (int_of_float (float_of_string x)) }
-  | (sign? (digit+) as x) '/' (digit+ as y)  { FRAC (int_of_float (float_of_string x), int_of_string y) } 
-  | (sign? (digit+) as x1) '/' ((digit+) as x2 ) (['+' '-'] (digit+) as x3) '/' ((digit+) as x4) "i" { COMF (int_of_float (float_of_string x1), int_of_string x2, int_of_float (float_of_string x3), int_of_string x4) }
-  | (sign? (digit+) as x1) '/' ((digit+) as x2 ) (['+' '-'] (digit+ '.' | digit* frac) exp? as x3) "i" { COMFN (int_of_float (float_of_string x1), int_of_string x2, float_of_string x3) }
-  | (float+ as x1) (['+' '-'] (digit+) as x2) '/' ((digit+) as x3) "i" { COMNF (float_of_string x1, int_of_float (float_of_string x2), int_of_string x3) }
-  | (float+ as x1) (['+' '-'] (digit+ '.' | digit* frac) exp? as x2) "i" { COMN (float_of_string x1, float_of_string x2) }
-  | (int+ as x1) (['+' '-'] (digit+) as x2) "i" { COMF (int_of_float (float_of_string x1), 1, int_of_float (float_of_string x2), 1) }
-  | (int+ as x1) (['+' '-'] (digit+) as x2) '/' ((digit+) as x3) "i" { COMF (int_of_float (float_of_string x1), 1, int_of_float (float_of_string x2), int_of_string x3) }
-  | (int+ as x1) (['+' '-'] (digit+ '.' | digit* frac) exp? as x2) "i" { COMFN (int_of_float (float_of_string x1), 1, float_of_string x2) }
-  | (float+ as x1) (['+' '-'] (digit+) as x2) "i" { COMNF (float_of_string x1, int_of_float (float_of_string x2), 1) }
-  | (sign? (digit+) as x1) '/' ((digit+) as x2 ) (['+' '-'] (digit+) as x3) "i" { COMF (int_of_float (float_of_string x1), int_of_string x2, int_of_float (float_of_string x3), 1) }
-  | (int+ as x1) (['+' '-'] as x2) "i" { COMF (int_of_float (float_of_string x1), 1, int_of_string (if x2 = '+' then "1" else "-1"), 1) }
-  | (float+ as x1) (['+' '-'] as x2) "i" { COMNF (float_of_string x1, int_of_string (if x2 = '+' then "1" else "-1"), 1) }
-  | (sign? (digit+) as x1) '/' ((digit+) as x2 ) (['+' '-'] as x3) "i" { COMF (int_of_float (float_of_string x1), int_of_string x2, int_of_string (if x3 = '+' then "1" else "-1"), 1) }
+  | (''')* (float as x)  { FLOAT (float_of_string x) }
+  | (''')* (int as x)    { INT (int_of_float (float_of_string x)) }
+  | (''')* (sign? (digit+) as x) '/' (digit+ as y)  { FRAC (int_of_float (float_of_string x), int_of_string y) } 
+  | (''')* (sign? (digit+) as x1) '/' ((digit+) as x2 ) (['+' '-'] (digit+) as x3) '/' ((digit+) as x4) "i" { COMF (int_of_float (float_of_string x1), int_of_string x2, int_of_float (float_of_string x3), int_of_string x4) }
+  | (''')* (sign? (digit+) as x1) '/' ((digit+) as x2 ) (['+' '-'] (digit+ '.' | digit* frac) exp? as x3) "i" { COMFN (int_of_float (float_of_string x1), int_of_string x2, float_of_string x3) }
+  | (''')* (float+ as x1) (['+' '-'] (digit+) as x2) '/' ((digit+) as x3) "i" { COMNF (float_of_string x1, int_of_float (float_of_string x2), int_of_string x3) }
+  | (''')* (float+ as x1) (['+' '-'] (digit+ '.' | digit* frac) exp? as x2) "i" { COMN (float_of_string x1, float_of_string x2) }
+  | (''')* (int+ as x1) (['+' '-'] (digit+) as x2) "i" { COMF (int_of_float (float_of_string x1), 1, int_of_float (float_of_string x2), 1) }
+  | (''')* (int+ as x1) (['+' '-'] (digit+) as x2) '/' ((digit+) as x3) "i" { COMF (int_of_float (float_of_string x1), 1, int_of_float (float_of_string x2), int_of_string x3) }
+  | (''')* (int+ as x1) (['+' '-'] (digit+ '.' | digit* frac) exp? as x2) "i" { COMFN (int_of_float (float_of_string x1), 1, float_of_string x2) }
+  | (''')* (float+ as x1) (['+' '-'] (digit+) as x2) "i" { COMNF (float_of_string x1, int_of_float (float_of_string x2), 1) }
+  | (''')* (sign? (digit+) as x1) '/' ((digit+) as x2 ) (['+' '-'] (digit+) as x3) "i" { COMF (int_of_float (float_of_string x1), int_of_string x2, int_of_float (float_of_string x3), 1) }
+  | (''')* (int+ as x1) (['+' '-'] as x2) "i" { COMF (int_of_float (float_of_string x1), 1, int_of_string (if x2 = '+' then "1" else "-1"), 1) }
+  | (''')* (float+ as x1) (['+' '-'] as x2) "i" { COMNF (float_of_string x1, int_of_string (if x2 = '+' then "1" else "-1"), 1) }
+  | (''')* (sign? (digit+) as x1) '/' ((digit+) as x2 ) (['+' '-'] as x3) "i" { COMF (int_of_float (float_of_string x1), int_of_string x2, int_of_string (if x3 = '+' then "1" else "-1"), 1) }
   | "cond"      { COND }
   | "lambda"    { FUN }
   | "list"      { LIST }
@@ -96,9 +96,11 @@ rule token = parse
   | "number?"   { ISNUM }
   | "error"     { ERROR }
   | "write"     { WRITE }
+  | "begin"     { BEGIN }
   | comp as s   { COMPOP s}
   | var as s    { VAR s }
   | stg as s    { STRING s }
+  | ''' (st+ as s)                    { SYMBOL  s }
   | '#' '\\' (st as s)                { CHAR s }
   | '#' '\\' ("null" | "nul" as s)    { CHARNULL s }
   | eof                               { raise Eof }

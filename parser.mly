@@ -10,6 +10,7 @@
 %token <float * float> COMN
 %token <string> COMPOP
 %token <string> STRING
+%token <string> SYMBOL
 %token <char> CHAR
 %token <string> CHARNULL
 %token EQUAL
@@ -25,6 +26,7 @@
 %token ISNULL
 %token ISNUM
 %token ERROR
+%token BEGIN
 %token NULL
 %token LIST
 %token <string> VAR
@@ -123,6 +125,7 @@ expr:
   | NAN                              { NanS }
   | TRUE                             { BoolS true }
   | FALSE                            { BoolS false }
+  | SYMBOL                           { SymbolS $1 }
   | STRING                           { StringS $1 }
   | CHAR                             { CharS $1 }
   | CHARNULL                         { CharNullS $1 }
@@ -168,5 +171,6 @@ expr:
   | OPAREN ISNUM expr CPAREN                                { IsNumS $3 }
   | OPAREN ERROR STRING CPAREN                              { ErrorS $3 }
   | OPAREN WRITE STRING CPAREN                              { WriteS $3 }
+  | OPAREN BEGIN listExpr                                   { BeginS $3 }
 ;
 

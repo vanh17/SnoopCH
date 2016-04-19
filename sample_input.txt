@@ -143,13 +143,28 @@
 (equal? (add-nums (list)) 0) ;;empty list
 (equal? (add-nums (list 1 2 'a 3)) 6) ;; non-number
 (equal? (add-nums (list 'a 'b 'c)) 0) ;; all non-number
+(equal? (add-nums (list 'a '2 'c)) 2) ;; all non-number
 (equal? (add-nums (list 0 0 0)) 0) ;; all zero
 (equal? (add-nums (list -1 0 1)) 0) ;; negative number
 (equal? (add-nums (list (cons 1 2) (cons 3 4) (cons 'a 'b))) 0) ;;list of pair
+(equal? (add-nums (list '3+4i '2 'c)) 5+4i) ;; all non-number
+(equal? (add-nums (list '2. 0 '3/4+2i)) 2.75+2.i) ;; complex number
 
 ;; length
 (write "length tests")
 (equal? (length (list)) 0) ;; empty list
 (equal? (length (list 1 2 3 'a 'b 'c)) 6) ;; non-numbers and numbers
-(equal? (length (list "abc" '3 '3' 4' 5)) 5) ;; string and other elements
+(equal? (length (list "abc" '3 '3' '4 5)) 5) ;; string and other elements
 (equal? (length (list (cons 1 2) (cons 3 4) (cons 4 5))) 3) ;; pair list
+
+(write "begin tests")
+(equal? (begin (let ([x 3]) (+ x 3)) (+ 3 2)) 5)
+(equal? (+ 3 (begin (write "3 + 8 =") (+ 3 5))) 11)
+
+(write "tests arithmetic operation")
+(equal? (+ 2 4/3+2i) 10/3+2i)
+(equal? (+ 2. 3/4+2i) 2.75+2.i)
+(equal? (+ 3/4+2i 3.) 3.75+2.i)
+(equal? (+ 1/3 2/3+2i) 1+2i)
+(equal? (+ 2. 3+5i) 5.+5.i)
+(equal? (* 2. 4+2i) 8+4i)
