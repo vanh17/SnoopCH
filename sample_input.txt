@@ -161,6 +161,11 @@
 (equal? (begin (let ([x 3]) (+ x 3)) (+ 3 2)) 5)
 (equal? (+ 3 (begin (write "3 + 8 =") (+ 3 5))) 11)
 
+(write "begin0 tests")
+(equal? (begin0 (let ([x 3]) (+ x 3)) (+ 3 2)) 6)
+(equal? (+ 3 (begin0 (+ 3 0) (write "3 + 8 =") (+ 3 5))) 6)
+(equal? (begin0 (let ([x true]) (equal? true x)) (+ 3 2)) true)
+
 (write "tests arithmetic operation")
 (equal? (+ 2 4/3+2i) 10/3+2i)
 (equal? (+ 2. 3/4+2i) 2.75+2.i)

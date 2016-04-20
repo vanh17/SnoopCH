@@ -55,6 +55,7 @@ type exprS = IntS of int
              | ErrorS of string
              | WriteS of string
              | BeginS of exprS list
+             | BeginZeroS of exprS list
              | DefineS of exprS * exprS
              | CallS of (exprS * (exprS list))
 type exprC = IntC of int
@@ -105,6 +106,7 @@ type exprC = IntC of int
              | ErrorC of string
              | WriteC of string
              | BeginC of exprC list
+             | BeginZeroC of exprC list
              | DefineC of exprC * exprC
              | CallC of (exprC * (exprC list))
 type value = Int of int

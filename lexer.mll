@@ -97,6 +97,7 @@ rule token = parse
   | "error"     { ERROR }
   | "write"     { WRITE }
   | "begin"     { BEGIN }
+  | "begin0"    { BEGIN0 }
   | comp as s   { COMPOP s}
   | var as s    { VAR s }
   | stg as s    { STRING s }

@@ -35,6 +35,7 @@
 %token MAKESTRING
 %token STRINGFROMLST
 %token CHARTOINT
+%token BEGIN0
 %token INTTOCHAR
 %token MAP
 %token FOLDR
@@ -172,5 +173,6 @@ expr:
   | OPAREN ERROR STRING CPAREN                              { ErrorS $3 }
   | OPAREN WRITE STRING CPAREN                              { WriteS $3 }
   | OPAREN BEGIN listExpr                                   { BeginS $3 }
+  | OPAREN BEGIN0 listExpr                                  { BeginZeroS $3 }
 ;
 

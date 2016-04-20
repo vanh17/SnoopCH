@@ -56,6 +56,7 @@ type exprS = IntS of int
              | ErrorS of string
              | WriteS of string
              | BeginS of exprS list
+             | BeginZeroS of exprS list
              | DefineS of exprS * exprS
              | CallS of (exprS * (exprS list))
 
@@ -108,6 +109,7 @@ type exprC = IntC of int
              | ErrorC of string
              | WriteC of string
              | BeginC of exprC list
+             | BeginZeroC of exprC list
              | DefineC of exprC * exprC
              | CallC of (exprC * (exprC list))
 
@@ -414,6 +416,7 @@ let rec desugar exprS = match exprS with
   | ErrorS e              -> ErrorC e
   | WriteS s              -> WriteC s
   | BeginS elst           -> BeginC (List.map (fun x -> desugar x) elst)
+  | BeginZeroS elst       -> BeginZeroC (List.map (fun x -> desugar x) elst)
   | DefineS (var, value)  -> DefineC (desugar var, desugar value)
   | CallS (f, i)          -> CallC (desugar f, List.map (fun x -> desugar x) i)
 
@@ -543,6 +546,15 @@ let rec interp env r = match r with
                                                            | e :: rest -> ( match interp env e with 
                                                                             | _ -> evaluateBegin rest ) )
                              in evaluateBegin elst
+  | BeginZeroC elst       -> ( match elst with
+                               | [] -> raise (Interp "beginzeroErr: cant work on empty form")
+                               | (DefineC _) :: _ -> raise (Interp "beginzeroErr: define is not allowed in the expression context")
+                               | e :: rest -> (let rec evaluateBegin1 result lst = ( match lst with
+                                                                                   | [] -> result
+                                                                                   | (DefineC _) :: _ -> raise (Interp "beginErr: define is not allowed in the expression context")
+                                                                                   | e :: rest -> ( match interp env e with 
+                                                                                                    | _ -> evaluateBegin1 result rest ) )
+                                              in evaluateBegin1 (interp env e) rest ) )
   | DefineC (var, value)-> ( match var with
                              | VarC v -> let r1 = RefToOpV (ref None) 
                                          in ( match (enref:= (bind v r1 (!enref))) with
