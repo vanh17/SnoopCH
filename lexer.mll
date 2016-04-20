@@ -27,7 +27,7 @@ let stg = '"' (st | ' ' | '[' | ']' | '(' | ')' | '~' | '&' | '!' | var)+ '"'
 let chr = '#' '\\' st+ 
 
 rule token = parse
-  | ";;" ((st | ' ' | '\t' | '~' | '&' | '*' | var | '"' | '[' | ']' | '(' | ')' | ';' | '!' | ''' | '`')+ as s) newline  { token lexbuf } 
+  | ";;" (st | ' ' | '\t' | '~' | '&' | '*' | var | '"' | '[' | ']' | '(' | ')' | ';' | '!' | ''' | '`')+ newline  { token lexbuf } 
   | white       { token lexbuf }
   | newline     { token lexbuf }
   | true        { TRUE }

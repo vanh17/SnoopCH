@@ -78,7 +78,7 @@ main:
 headEx:
   | expr                                            { $1 }
   | OPAREN DEFINE OPAREN VAR listExpr expr CPAREN   { DefineS (VarS $4, FunS ($5, $6)) }
-  | OPAREN DEFINE  expr expr CPAREN                 { DefineS ($3, $4) }
+  | OPAREN DEFINE VAR expr CPAREN                   { DefineS (VarS $3, $4) }
 ;
 
 listVar:

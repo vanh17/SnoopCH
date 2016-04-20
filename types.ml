@@ -352,9 +352,9 @@ let rec isTheSame e1 e2 = match (e1, e2) with
                                                                 | _ -> false )
                           | (Pair (x1, x2), Pair (y1, y2)) -> (isTheSame x1 y1) && (isTheSame x2 y2)
                           | (Null, Null)                   -> true
-                          | _ -> (try (eqEval e1 e2; ( match (eqEval e1 e2) with
-                                                       | Bool i -> i
-                                                       | _      -> false )) with _ -> false)
+                          | _ -> ( match (eqEval e1 e2) with
+                                   | Bool i -> i
+                                   | _      -> false)
 
 
 (* INTERPRETER *)
@@ -474,10 +474,12 @@ let rec interp env r = match r with
                                                               | _ -> raise (Interp "let*Err: need at least one binding") )
                            in interp (bindListPair lst env) e2
   | LetrC (lst, e2)     -> let r1 = ref env
-                           in let lst1 = (List.map (fun (VarC v, e) -> ( let r2 = RefToOpV (ref None)
-                                                                         in ( match (r1:= (bind v r2 (!r1))) with
-                                                                              | _ -> (VarC v, r2, e) ) ) ) lst) 
-                              in ( match (List.map (fun (VarC v, re, e) -> ( match re with
+                           in let lst1 = (List.map (fun (t, e) -> ( match t with
+                                                                    | VarC v -> ( let r2 = RefToOpV (ref None)
+                                                                                  in ( match (r1:= (bind v r2 (!r1))) with
+                                                                                       | _ -> (VarC v, r2, e) ) ) 
+                                                                    | _ -> raise (Interp "letrecErr: not a variable-value pair") ) ) lst) 
+                              in ( match (List.map (fun (t, re, e) -> ( match re with
                                                                              | RefToOpV r3 -> (r3:= (Some (interp env e)))
                                                                              | _ -> raise (Interp "letrErr") ) ) lst1) with
                                    | _ -> interp (!r1) e2 )
